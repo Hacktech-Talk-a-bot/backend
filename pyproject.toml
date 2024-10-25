@@ -50,6 +50,7 @@ ngrok = "^1.4.0"
 pyngrok = "^7.2.0"
 
 
+python-multipart = "^0.0.12"
 [tool.black]
 line-length = 79
 target-version = ["py310"]

@@ -1,0 +1,90 @@
+########################################
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"firstName\": \"text\", \"lastName\": \"text\", \"email\": \"email\", \"password\": \"password\"}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"hasVehicle\": \"checkbox\", \"vehicleType\": \"select\", \"carModel\": \"text\", \"motorcycleType\": \"select\"}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"personalInfo\": {\"firstName\": \"text\", \"lastName\": \"text\", \"age\": \"number\"}, \"employmentStatus\": \"select\", \"employerDetails\": {\"companyName\": \"text\", \"position\": \"text\", \"yearsEmployed\": \"number\"}, \"educationLevel\": \"select\", \"degrees\": \"multiple\"}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"userProfile\": {\"username\": \"text\", \"password\": \"password\", \"securityQuestion\": \"select\", \"securityAnswer\": \"text\"}, \"contactInfo\": {\"email\": \"email\", \"phone\": \"number\", \"preferredContactMethod\": \"radio\"}, \"preferences\": {\"newsletter\": \"checkbox\", \"interests\": \"multiple\"}, \"agreements\": {\"terms\": \"checkbox\", \"privacyPolicy\": \"checkbox\", \"marketingConsent\": \"checkbox\"}}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"registration\": {\"firstName\": \"text\", \"lastName\": \"text\", \"email\": \"email\", \"password\": \"password\"}, \"profile\": {\"bio\": \"textarea\", \"profilePicture\": \"file\"}, \"settings\": {\"language\": \"select\", \"timezone\": \"select\", \"notifications\": \"checkboxes\"}, \"security\": {\"twoFactorAuth\": \"checkbox\", \"backupEmail\": \"email\"}}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"survey\": {\"questions\": [{\"questionText\": \"text\", \"questionType\": \"select\", \"options\": \"multiple\"}], \"allowAnonymous\": \"checkbox\"}, \"responses\": {\"responseText\": \"textarea\", \"rating\": \"slider\"}}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"booking\": {\"destination\": \"text\", \"travelDates\": \"dateRange\", \"numberOfGuests\": \"number\"}, \"guestDetails\": [{\"name\": \"text\", \"age\": \"number\", \"passportNumber\": \"text\"}], \"paymentInfo\": {\"cardNumber\": \"text\", \"expiryDate\": \"date\", \"cvv\": \"number\"}}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"productFeedback\": {\"productId\": \"text\", \"rating\": \"slider\", \"comments\": \"textarea\"}, \"userInfo\": {\"userId\": \"text\", \"purchaseDate\": \"date\"}, \"consent\": {\"allowContact\": \"checkbox\", \"shareFeedback\": \"checkbox\"}}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"eventRegistration\": {\"eventName\": \"text\", \"eventDate\": \"date\", \"attendeeType\": \"select\"}, \"attendeeInfo\": {\"name\": \"text\", \"email\": \"email\", \"company\": \"text\", \"jobTitle\": \"text\"}, \"preferences\": {\"mealPreference\": \"select\", \"accessibilityNeeds\": \"textarea\"}}"
+}
+
+########################################
+
+POST http://localhost:8000/survey
+Content-Type: application/json
+
+{
+  "input_json": "{\"application\": {\"positionApplied\": \"text\", \"resume\": \"file\", \"coverLetter\": \"file\"}, \"personalDetails\": {\"fullName\": \"text\", \"email\": \"email\", \"phone\": \"number\", \"address\": \"textarea\"}, \"education\": [{\"institution\": \"text\", \"degree\": \"text\", \"fieldOfStudy\": \"text\", \"graduationYear\": \"number\"}], \"workExperience\": [{\"company\": \"text\", \"role\": \"text\", \"startDate\": \"date\", \"endDate\": \"date\", \"responsibilities\": \"textarea\"}]}"
+}
+
+########################################
