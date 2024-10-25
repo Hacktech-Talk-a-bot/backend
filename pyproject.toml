@@ -4,7 +4,9 @@ version = "0.1.0"
 description = ""
 authors = ["Adrian Padurean <securiteradmin@gmail.com>"]
 readme = "README.md"
-
+packages = [
+    { include = "app" }
+]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
@@ -69,3 +71,6 @@ order_by_type = false
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "app.main:start"
