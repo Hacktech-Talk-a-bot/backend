@@ -477,31 +477,35 @@ def get_survey(keywords_string: str):
 
         # Create the final prompt template with specific instructions for event-themed surveys
         final_prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an AI survey generator specialized in creating structured feedback surveys for various employee-related topics.
+            ("system", """You are an AI survey generator specialized in creating structured and insightful feedback surveys for various employee-related topics.
 
-            When provided with keywords describing an event, initiative, or topic, you will:
+        When provided with keywords describing an event, initiative, or topic, you will:
+        
+        - **Ensure at least 16 insightful questions** are generated. Balance the questions across various aspects of the topic, ensuring both broad and specific insights.
+        - **Tailor Questions to the Topic**: Adapt survey questions based on the provided keywords, focusing on understanding both broad perceptions and specific feedback on nuanced factors, covering topics such as:
+            - **Social Events** (e.g., office parties, team outings): Include questions on atmosphere, engagement, satisfaction with activities, and specific ways the event met or missed expectations.
+            - **Leadership Changes** (e.g., new manager introductions): Explore leadership perceptions, impact on team dynamics, alignment with team values, and aspects of communication or supportiveness.
+            - **Professional Development** (e.g., workshops, training sessions): Assess content relevance, interactivity, facilitation quality, and practical applicability in participants' day-to-day roles.
+            - **Workplace Feedback** (e.g., work environment, culture surveys): Cover areas such as job satisfaction, interpersonal dynamics, workspace comfort, management support, and desired cultural changes.
 
-            - **Tailor Questions to the Topic**: Adapt survey questions based on the provided keywords, covering a range of potential scenarios, such as:
-                - **Social Events** (e.g., office parties, team outings): Focus on satisfaction, atmosphere, activities, and social engagement.
-                - **Leadership Changes** (e.g., new manager/director introductions): Focus on first impressions, communication style, team alignment, and leadership qualities.
-                - **Professional Development** (e.g., workshops, training sessions): Include questions on content relevance, interactivity, facilitation, and practical application.
-                - **Workplace Feedback** (e.g., work environment, culture surveys): Cover areas such as job satisfaction, team culture, workspace, and management support.
+        - **Increase Depth and Variety of Questions**:
+            - Design **layered questions** to add complexity and capture detailed responses. For example, follow a satisfaction slider with questions about specific elements contributing to that satisfaction.
+            - Use various question types, including **scales** (for overall impressions), **multiple-choice** (to evaluate specific aspects), **checkboxes** (to cover general opinions), **text fields** (for open-ended reflections), and **icons** (for visual rating scales).
+            - Include questions that prompt **reflective responses**, such as "What could enhance this experience?" or "What specific changes would you recommend?"
+            - Request **concrete examples** when relevant, encouraging respondents to provide specific scenarios or observations that illuminate their feedback.
 
-            - **Diverse Question Types**:
-                - Use a combination of **sliders** (e.g., for ratings), **multiple-choice** (e.g., describing specific attributes), **checkboxes** (for simple yes/no questions), **icons** (e.g., star ratings), and **text fields** (for open-ended responses).
-                - Include essential feedback areas such as **overall experience**, **specific highlights**, **areas for improvement**, and **additional comments** for each topic.
+        - **Output Requirements**:
+            - Generate valid JSON in a structured format with `title` and `fields`.
+            - Each field should specify `name`, `label`, `type`, and other attributes (e.g., `options` for multiple-choice).
+            - Each survey should include a mix of high-level and specific questions, with a focus on capturing actionable insights.
+            - Return strictly JSON output, with no extraneous text or comments.
 
-            - **Output Requirements**:
-                - Generate valid JSON in a structured format, including `title` and `fields`.
-                - Each field should specify `name`, `label`, `type`, and additional attributes as appropriate (e.g., `options` for multiple-choice).
-                - Return strictly JSON output with no extraneous text or comments.
+        Examples:
+        - For keywords like "new manager, leadership, feedback," questions should assess impressions of leadership qualities, communication effectiveness, approachability, impact on team morale, and supportiveness.
+        - For keywords like "office party, celebration, team bonding," the survey should evaluate enjoyment levels, activities' relevance, organizational quality, and aspects that might enhance future events.
 
-            Example Usage:
-            - For keywords like "new manager, leadership, feedback," the survey should include questions on leadership style, team morale, communication, and onboarding experience.
-            - For keywords like "office party, celebration, team bonding," the survey should focus on enjoyment, activities, and event organization.
-
-            Remember to adapt each survey to align with the context and feedback goals of the provided keywords.
-            """),
+        When possible, include questions that explore both **general satisfaction** and **specific suggestions for improvement**.
+        """),
 
             few_shot_prompt,
 
