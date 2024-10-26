@@ -9,13 +9,13 @@ from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 
-from app.api.v1.endpoints import forms  # Add sections import
+from app.api.endpoints import router
+# from app.api.v1.endpoints import prototype  # Add sections import
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import create_database
 from app.llm.survey_router import survey_router
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+create_database()
 # Load .env file at startup
 # Since your .env is at the root level (same level as the app directory),
 # we need to adjust the path accordingly
@@ -24,13 +24,8 @@ load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-app.include_router(survey_router, prefix="/api", tags=["survey"])
-
-app.include_router(
-    forms.router,
-    prefix=settings.API_V1_STR + "/forms",
-    tags=["forms"]
-)
+app.include_router(survey_router, prefix=settings.API_V1_STR, tags=["survey"])
+app.include_router(router, prefix=settings.API_V1_STR, tags=["forms"])
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 client = OpenAI()
