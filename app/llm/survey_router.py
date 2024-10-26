@@ -33,6 +33,7 @@ from app.llm.survey_agent import get_survey, generate_keywords, TextInput
 
 logger = logging.getLogger(__name__)
 
+
 app = FastAPI()
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 client = OpenAI()
@@ -95,10 +96,10 @@ async def get_survey_call(keywords: KeywordsInput = Body(...)):
         survey_json = get_survey(keywords.keywords)
 
         # Validate survey structure
-        if not isinstance(survey_json, list):
+        if not isinstance(survey_json, list) or not survey_json:
             raise HTTPException(
                 status_code=500,
-                detail="Invalid survey structure generated"
+                detail="Invalid or empty survey structure generated"
             )
 
         # Create response using Pydantic model
@@ -135,8 +136,36 @@ async def analyze_media(
         input_data: str = Form(...),
         file: UploadFile = File(...)
 ):
-    """Analyze media (image/video) with associated text"""
+    """Analyze media with associated text using GPT-4 vision capabilities."""
     try:
+        # Validate file
+        if not file.filename:
+            raise HTTPException(
+                status_code=400,
+                detail="No file provided"
+            )
+
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(
+                status_code=400,
+                detail="Empty file provided"
+            )
+
+        if len(contents) > 10 * 1024 * 1024:
+            raise HTTPException(
+                status_code=400,
+                detail="File size exceeds 10MB limit"
+            )
+
+        # Validate file type
+        content_type = file.content_type
+        if not content_type or not content_type.startswith('image/'):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid file type. Only images are allowed."
+            )
+
         # Try to parse as JSON first
         text = ''
         try:
@@ -146,18 +175,19 @@ async def analyze_media(
             # If JSON parsing fails, use the input string directly
             text = input_data
 
-        # Read and encode the file
-        contents = await file.read()
         base64_image = base64.b64encode(contents).decode('utf-8')
 
-        vision_payload = {
-            "model": "gpt-4o",
-            "messages": [
+        # Use GPT-4 for image analysis
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text",
-                         "text": "Analyze this image and describe what you see. Focus on the main subject in the image and its particular characteristics."},
+                        {
+                            "type": "text",
+                            "text": "Analyze this image and describe what you see. Focus on the main subject in the image and its particular characteristics."
+                        },
                         {
                             "type": "image_url",
                             "image_url": {
@@ -167,40 +197,22 @@ async def analyze_media(
                     ]
                 }
             ],
-            "max_tokens": 500
+            max_tokens=500
+        )
+
+        image_description = response.choices[0].message.content
+        keyword_generation_text = f"TEXT: {text} IMAGE: {image_description}"
+        keywords = await generate_keywords(keyword_generation_text)
+
+        return {
+            "imageAnalysis": image_description,
+            "text": text,
+            "extractedKeywords": keywords
         }
 
-        async with httpx.AsyncClient() as http_client:
-            vision_response = await http_client.post(
-                OPENAI_URL,
-                json=vision_payload,
-                headers={
-                    "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}",
-                    "Content-Type": "application/json"
-                }
-            )
-            vision_result = vision_response.json()
-            image_description = vision_result['choices'][0]['message']['content']
-
-            keyword_generation_text = f"TEXT: {text} IMAGE: {image_description}"
-            keywords = await generate_keywords(keyword_generation_text)
-
-            return {
-                "imageAnalysis": image_description,
-                "text": text,
-                "extractedKeywords": keywords
-            }
-    except OpenAIError as oaie:
-        traceback.print_exc()
-        logger.error(f"OpenAI API error: {str(oaie)}")
-        raise HTTPException(status_code=500, detail=f"OpenAI API error: {str(oaie)}")
     except Exception as e:
-        traceback.print_exc()
-        logger.error(f"Unexpected error: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"An unexpected error occurred: {str(e)}"
-        )
+        logger.error(f"Error in analyze_media: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @survey_router.post("/analyze-text")
@@ -223,6 +235,7 @@ async def analyze_text(input_data: TextInput):
 
 @survey_router.post("/analyze-voice")
 async def analyze_voice_survey(audio_file: UploadFile = File(...)):
+    """Transcribe audio and analyze content using GPT-4o."""
     allowed_extensions = ['.flac', '.m4a', '.mp3', '.mp4', '.mpeg', '.mpga', '.oga', '.ogg', '.wav', '.webm']
     file_ext = os.path.splitext(audio_file.filename)[1].lower()
 
@@ -233,16 +246,13 @@ async def analyze_voice_survey(audio_file: UploadFile = File(...)):
         )
 
     try:
-        # Read file content
         content = await audio_file.read()
-
-        # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_file:
             temp_file.write(content)
             temp_file_path = temp_file.name
 
         try:
-            # Get transcription
+            # Transcribe audio
             with open(temp_file_path, "rb") as audio:
                 transcript = client.audio.transcriptions.create(
                     model="whisper-1",
@@ -251,31 +261,19 @@ async def analyze_voice_survey(audio_file: UploadFile = File(...)):
                 )
 
             keywords = await generate_keywords(transcript)
-
             return {
                 "originalText": {"transcript": transcript},
                 "extractedKeywords": keywords
             }
 
         finally:
-            # Clean up temporary file
             if os.path.exists(temp_file_path):
                 os.unlink(temp_file_path)
 
-    except OpenAIError as e:
-        traceback.print_exc()
-        logger.error(f"OpenAI API error: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"OpenAI API error: {str(e)}"
-        )
     except Exception as e:
         traceback.print_exc()
-        logger.error(f"Unexpected error: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"An unexpected error occurred: {str(e)}"
-        )
+        logger.error(f"Error in analyze_voice: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # @survey_router.post("/generate-keywords")
 # async def generate_keywords_endpoint(input_data: TextInput):
