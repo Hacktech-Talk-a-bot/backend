@@ -4,30 +4,16 @@ import json
 import logging
 import os
 import tempfile
-import json
-import os
 import traceback
-from fastapi import APIRouter, HTTPException, Body
-from typing import List, Dict, Union, Optional
-from pydantic import BaseModel, Field
-import traceback
-from logging import getLogger
-import json
-import httpx
-from fastapi import APIRouter, Body, Form
-from pydantic import BaseModel
+from typing import List
+from typing import Optional
 
-import httpx
-from fastapi import Body, APIRouter
-from fastapi import FastAPI, File
-from fastapi import UploadFile, HTTPException
-from openai import OpenAI, OpenAIError
 from fastapi import APIRouter, HTTPException, Body
-from typing import List, Dict, Union
+from fastapi import FastAPI, File
+from fastapi import Form
+from fastapi import UploadFile
+from openai import OpenAI
 from pydantic import BaseModel, Field
-import traceback
-from logging import getLogger
-import json
 
 from app.llm.survey_agent import get_survey, generate_keywords, TextInput
 
