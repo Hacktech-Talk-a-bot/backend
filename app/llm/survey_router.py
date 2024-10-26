@@ -57,23 +57,56 @@ class KeywordsInput(BaseModel):
 
 
 @survey_router.post("/survey", response_model=SurveyResponse)
-async def generate_survey(keywords: str = Body(..., embed=True)):
+async def generate_survey(input_data: KeywordsInput):
     """
     Endpoint to generate a survey JSON structure based on keywords provided.
 
     Args:
-        keywords (str): A comma-separated string representing survey-related keywords.
+        input_data (KeywordsInput): Input data containing comma-separated keywords for survey generation.
 
     Returns:
         dict: A dictionary containing the generated survey JSON.
     """
     try:
+        # Validate keywords input
+        keywords = input_data.keywords
+        if not keywords.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Keywords input cannot be empty."
+            )
+
         # Use the get_survey function with the provided keywords
         survey_json = get_survey(keywords)
-        return {"survey": survey_json}
+        if not survey_json:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to generate survey structure."
+            )
+
+        # Validate the generated survey structure
+        try:
+            survey_sections = [SurveySection(**section) for section in survey_json]
+        except Exception as e:
+            logger.error(f"Invalid survey structure generated: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail="Generated survey structure is invalid."
+            )
+
+        return {"survey": survey_sections}
+
+    except HTTPException as http_exc:
+        # Return HTTP exceptions as they are
+        raise http_exc
     except Exception as e:
+        # Log unexpected errors and raise a generic HTTP exception
+        traceback.print_exc()
         logger.error(f"Error generating survey: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
 
 
 @survey_router.post("/analyze-image")
