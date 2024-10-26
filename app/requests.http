@@ -1,90 +1,79 @@
-########################################
+####################
 POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"firstName\": \"text\", \"lastName\": \"text\", \"email\": \"email\", \"password\": \"password\"}"
+  "input_json": "{\"medicalHistory\": {\"allergies\": \"checkbox\", \"chronicConditions\": \"multiple\", \"currentMedications\": \"textarea\"}, \"familyHistory\": {\"heartDisease\": \"checkbox\", \"diabetes\": \"checkbox\", \"cancer\": \"checkbox\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"hasVehicle\": \"checkbox\", \"vehicleType\": \"select\", \"carModel\": \"text\", \"motorcycleType\": \"select\"}"
+  "input_json": "{\"restaurantBooking\": {\"date\": \"date\", \"time\": \"select\", \"partySize\": \"number\", \"seatingPreference\": \"radio\"}, \"specialRequests\": {\"dietaryRestrictions\": \"multiple\", \"occasion\": \"select\", \"additionalNotes\": \"textarea\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"personalInfo\": {\"firstName\": \"text\", \"lastName\": \"text\", \"age\": \"number\"}, \"employmentStatus\": \"select\", \"employerDetails\": {\"companyName\": \"text\", \"position\": \"text\", \"yearsEmployed\": \"number\"}, \"educationLevel\": \"select\", \"degrees\": \"multiple\"}"
+  "input_json": "{\"propertyListing\": {\"propertyType\": \"select\", \"bedrooms\": \"number\", \"bathrooms\": \"number\", \"amenities\": \"multiple\"}, \"location\": {\"address\": \"text\", \"city\": \"text\", \"zipCode\": \"text\"}, \"pricing\": {\"monthlyRent\": \"number\", \"securityDeposit\": \"number\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"userProfile\": {\"username\": \"text\", \"password\": \"password\", \"securityQuestion\": \"select\", \"securityAnswer\": \"text\"}, \"contactInfo\": {\"email\": \"email\", \"phone\": \"number\", \"preferredContactMethod\": \"radio\"}, \"preferences\": {\"newsletter\": \"checkbox\", \"interests\": \"multiple\"}, \"agreements\": {\"terms\": \"checkbox\", \"privacyPolicy\": \"checkbox\", \"marketingConsent\": \"checkbox\"}}"
+  "input_json": "{\"fitnessGoals\": {\"primaryGoal\": \"select\", \"currentFitnessLevel\": \"radio\", \"weeklyWorkoutDays\": \"number\"}, \"measurements\": {\"height\": \"number\", \"weight\": \"number\", \"bodyFatPercentage\": \"number\"}, \"preferences\": {\"workoutType\": \"multiple\", \"trainingTime\": \"select\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"registration\": {\"firstName\": \"text\", \"lastName\": \"text\", \"email\": \"email\", \"password\": \"password\"}, \"profile\": {\"bio\": \"textarea\", \"profilePicture\": \"file\"}, \"settings\": {\"language\": \"select\", \"timezone\": \"select\", \"notifications\": \"checkboxes\"}, \"security\": {\"twoFactorAuth\": \"checkbox\", \"backupEmail\": \"email\"}}"
+  "input_json": "{\"projectProposal\": {\"projectName\": \"text\", \"description\": \"textarea\", \"timeline\": \"dateRange\"}, \"budget\": {\"estimatedCost\": \"number\", \"currencyType\": \"select\", \"paymentTerms\": \"select\"}, \"team\": {\"teamSize\": \"number\", \"requiredSkills\": \"multiple\", \"projectManager\": \"text\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"survey\": {\"questions\": [{\"questionText\": \"text\", \"questionType\": \"select\", \"options\": \"multiple\"}], \"allowAnonymous\": \"checkbox\"}, \"responses\": {\"responseText\": \"textarea\", \"rating\": \"slider\"}}"
+  "input_json": "{\"courseEnrollment\": {\"courseId\": \"text\", \"startDate\": \"date\", \"studyMode\": \"radio\"}, \"studentInfo\": {\"academicBackground\": \"textarea\", \"priorExperience\": \"select\", \"learningGoals\": \"textarea\"}, \"requirements\": {\"laptop\": \"checkbox\", \"software\": \"multiple\", \"prerequisites\": \"multiple\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"booking\": {\"destination\": \"text\", \"travelDates\": \"dateRange\", \"numberOfGuests\": \"number\"}, \"guestDetails\": [{\"name\": \"text\", \"age\": \"number\", \"passportNumber\": \"text\"}], \"paymentInfo\": {\"cardNumber\": \"text\", \"expiryDate\": \"date\", \"cvv\": \"number\"}}"
+  "input_json": "{\"insuranceClaim\": {\"policyNumber\": \"text\", \"incidentDate\": \"date\", \"claimType\": \"select\"}, \"incidentDetails\": {\"description\": \"textarea\", \"location\": \"text\", \"witnesses\": \"number\"}, \"evidence\": {\"photos\": \"file\", \"documents\": \"file\", \"policeReport\": \"checkbox\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"productFeedback\": {\"productId\": \"text\", \"rating\": \"slider\", \"comments\": \"textarea\"}, \"userInfo\": {\"userId\": \"text\", \"purchaseDate\": \"date\"}, \"consent\": {\"allowContact\": \"checkbox\", \"shareFeedback\": \"checkbox\"}}"
+  "input_json": "{\"petAdoption\": {\"animalType\": \"select\", \"age\": \"select\", \"size\": \"radio\"}, \"adopter\": {\"housingType\": \"select\", \"hasYard\": \"checkbox\", \"otherPets\": \"multiple\"}, \"lifestyle\": {\"hoursAtHome\": \"number\", \"activityLevel\": \"select\", \"experience\": \"textarea\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"eventRegistration\": {\"eventName\": \"text\", \"eventDate\": \"date\", \"attendeeType\": \"select\"}, \"attendeeInfo\": {\"name\": \"text\", \"email\": \"email\", \"company\": \"text\", \"jobTitle\": \"text\"}, \"preferences\": {\"mealPreference\": \"select\", \"accessibilityNeeds\": \"textarea\"}}"
+  "input_json": "{\"eventPlanning\": {\"eventType\": \"select\", \"expectedGuests\": \"number\", \"dateTime\": \"datetime\"}, \"venue\": {\"location\": \"text\", \"setup\": \"multiple\", \"equipment\": \"multiple\"}, \"catering\": {\"mealType\": \"select\", \"dietaryOptions\": \"multiple\", \"beveragePackage\": \"select\"}, \"entertainment\": {\"musicType\": \"select\", \"activities\": \"multiple\", \"specialRequests\": \"textarea\"}}"
 }
 
-########################################
-
-POST http://localhost:8080/survey
+####################
+POST http://localhost:8080/api/survey
 Content-Type: application/json
 
 {
-  "input_json": "{\"application\": {\"positionApplied\": \"text\", \"resume\": \"file\", \"coverLetter\": \"file\"}, \"personalDetails\": {\"fullName\": \"text\", \"email\": \"email\", \"phone\": \"number\", \"address\": \"textarea\"}, \"education\": [{\"institution\": \"text\", \"degree\": \"text\", \"fieldOfStudy\": \"text\", \"graduationYear\": \"number\"}], \"workExperience\": [{\"company\": \"text\", \"role\": \"text\", \"startDate\": \"date\", \"endDate\": \"date\", \"responsibilities\": \"textarea\"}]}"
+  "input_json": "{\"subscriptionPreferences\": {\"plan\": \"radio\", \"billingCycle\": \"select\", \"autoRenew\": \"checkbox\"}, \"features\": {\"basicFeatures\": \"multiple\", \"addOns\": \"multiple\", \"customizations\": \"textarea\"}, \"notifications\": {\"emailUpdates\": \"checkbox\", \"smsAlerts\": \"checkbox\", \"frequency\": \"select\"}}"
 }
-
-########################################
