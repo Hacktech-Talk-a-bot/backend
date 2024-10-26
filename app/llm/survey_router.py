@@ -15,7 +15,7 @@ from fastapi import UploadFile
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-from app.llm.models import SurveyResponse, KeywordsInput, SurveyField
+from app.llm.models import SurveyResponse, KeywordsInput, SurveyField, SurveySection
 from app.llm.survey_agent import get_survey, generate_keywords, TextInput, rewrite_section
 
 logger = logging.getLogger(__name__)
