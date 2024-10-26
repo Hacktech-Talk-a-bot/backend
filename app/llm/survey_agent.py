@@ -20,6 +20,9 @@ from fastapi import FastAPI, File
 from fastapi import UploadFile, HTTPException
 from openai import OpenAI, OpenAIError
 
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+client = OpenAI()
+
 
 def get_survey(input_fields_json):
     # Create a ChatOpenAI instance
