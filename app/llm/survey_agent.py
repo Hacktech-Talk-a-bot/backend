@@ -3,8 +3,6 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, FewShotChatMessagePromptTemplate
 import json
 
-app = FastAPI()
-
 
 def get_survey(input_fields_json):
     # Create a ChatOpenAI instance
