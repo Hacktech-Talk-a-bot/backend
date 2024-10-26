@@ -1,26 +1,14 @@
+# app/main.py
+import json
+import os
 import traceback
 
-from fastapi import FastAPI, Body
+import httpx
+from fastapi import HTTPException
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, FewShotChatMessagePromptTemplate
-import json
-# app/main.py
-import base64
-import json
-import logging
-import os
-import tempfile
-import json
-import os
-import httpx
-from fastapi import APIRouter, Body
+from openai import OpenAI
 from pydantic import BaseModel
-
-import httpx
-from fastapi import Body, APIRouter
-from fastapi import FastAPI, File
-from fastapi import UploadFile, HTTPException
-from openai import OpenAI, OpenAIError
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 client = OpenAI()
