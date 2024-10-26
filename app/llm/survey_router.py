@@ -135,7 +135,7 @@ async def analyze_media(
                     "content": [
                         {
                             "type": "text",
-                            "text": "Analyze this image and describe what you see. Focus on the main subject in the image and its particular characteristics."
+                            "text": "Analyze this image and provide a detailed description, focusing on the main objects in the image that are relevant for feedback. Identify key features or elements of these primary objects that could impact user experience, satisfaction, and overall impression. Consider topics like quality, aesthetic appeal, ambiance, and functionality depending on the image context, whether it's food presentation, decor, or location setup. Generate keywords that could be used to create a feedback form about the experience, ambiance, or satisfaction with this subject. These keywords should be versatile enough to inform questions related to user opinions, perceived quality, aesthetics, and suitability for the intended purpose, specifically focusing on the most prominent objects in the image."
                         },
                         {
                             "type": "image_url",
