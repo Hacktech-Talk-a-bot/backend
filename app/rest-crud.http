@@ -1,0 +1,254 @@
+# api_requests.http
+
+### Variables
+#@baseUrl = http://localhost:8080/api/v1
+#@contentType = application/json
+
+### Health Check
+GET http://localhost:8080/health
+
+### ============ USER OPERATIONS ============
+
+### Create a new user
+POST {{baseUrl}}/users/
+Content-Type: {{contentType}}
+
+{
+    "name": "John Doe",
+    "category": "student"
+}
+
+### Create another user
+POST {{baseUrl}}/users/
+Content-Type: {{contentType}}
+
+{
+    "name": "Jane Smith",
+    "category": "teacher"
+}
+
+### Get all users (with pagination)
+GET {{baseUrl}}/users/?skip=0&limit=10
+
+### Get specific user
+GET {{baseUrl}}/users/1
+
+### Update user
+PATCH {{baseUrl}}/users/1
+Content-Type: {{contentType}}
+
+{
+    "name": "John Doe Updated",
+    "category": "professional"
+}
+
+### ============ FORM OPERATIONS ============
+
+### Create a new form
+POST {{baseUrl}}/forms/
+Content-Type: {{contentType}}
+
+{
+    "title": "Annual Survey 2024",
+    "description": "Feedback survey for the year 2024",
+    "json_structure": {
+        "questions": [
+            {
+                "id": 1,
+                "type": "multiple_choice",
+                "question": "How satisfied are you?",
+                "options": ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied"]
+            },
+            {
+                "id": 2,
+                "type": "text",
+                "question": "Any additional comments?"
+            }
+        ]
+    },
+    "category": "feedback"
+}
+
+### Create another form
+POST {{baseUrl}}/forms/
+Content-Type: {{contentType}}
+
+{
+    "title": "Employee Onboarding",
+    "description": "New employee onboarding checklist",
+    "json_structure": {
+        "sections": [
+            {
+                "id": "personal",
+                "title": "Personal Information",
+                "fields": ["name", "address", "phone"]
+            },
+            {
+                "id": "documents",
+                "title": "Required Documents",
+                "fields": ["id_proof", "address_proof"]
+            }
+        ]
+    },
+    "category": "onboarding"
+}
+
+### Get all forms (with pagination)
+GET {{baseUrl}}/forms/?skip=0&limit=10
+
+### Get specific form
+GET {{baseUrl}}/forms/1
+
+### Update form
+PATCH {{baseUrl}}/forms/1
+Content-Type: {{contentType}}
+
+{
+    "title": "Annual Survey 2024 - Updated",
+    "state": "started"
+}
+
+### Update form state
+PATCH {{baseUrl}}/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "finished"
+}
+
+### ============ USER-FORM RELATIONSHIP OPERATIONS ============
+
+### Assign form to user
+POST {{baseUrl}}/users/1/forms/1
+Content-Type: {{contentType}}
+
+{
+    "json_begin": {
+        "started_at": "2024-01-01T10:00:00Z",
+        "device": "web",
+        "initial_data": {
+            "department": "IT",
+            "role": "developer"
+        }
+    }
+}
+
+### Update user's form state (in progress with partial response)
+PATCH {{baseUrl}}/users/1/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "in_progress",
+    "json_response": {
+        "questions": {
+            "1": "Very Satisfied",
+            "2": null
+        },
+        "last_updated": "2024-01-01T10:30:00Z"
+    }
+}
+
+### Update user's form state (finished with complete response)
+PATCH {{baseUrl}}/users/1/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "finished",
+    "json_response": {
+        "questions": {
+            "1": "Very Satisfied",
+            "2": "Great experience overall!"
+        },
+        "completed_at": "2024-01-01T11:00:00Z"
+    }
+}
+
+### Update user's form state (analyzed)
+PATCH {{baseUrl}}/users/1/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "analyzed",
+    "json_response": {
+        "questions": {
+            "1": "Very Satisfied",
+            "2": "Great experience overall!"
+        },
+        "completed_at": "2024-01-01T11:00:00Z",
+        "analysis": {
+            "sentiment": "positive",
+            "key_points": ["satisfied", "great experience"],
+            "analyzed_at": "2024-01-01T12:00:00Z"
+        }
+    }
+}
+
+### Get all forms for a specific user
+GET {{baseUrl}}/users/1/forms/
+
+
+### ============ ERROR CASES ============
+
+### Try to get non-existent user
+GET {{baseUrl}}/users/999
+
+### Try to get non-existent form
+GET {{baseUrl}}/forms/999
+
+### Try to create user with missing fields
+POST {{baseUrl}}/users/
+Content-Type: {{contentType}}
+
+{
+    "name": "Invalid User"
+}
+
+### Try to create form with invalid state
+PATCH {{baseUrl}}/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "invalid_state"
+}
+
+### Try to update user-form with invalid state
+PATCH {{baseUrl}}/users/1/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "invalid_state"
+}
+
+### Try to assign same form to user twice
+# Run this after successfully creating a user-form relationship
+POST {{baseUrl}}/users/1/forms/1
+Content-Type: {{contentType}}
+
+{
+    "json_begin": {
+        "started_at": "2024-01-01T10:00:00Z"
+    }
+}
+
+### Try to update non-existent user-form relationship
+PATCH {{baseUrl}}/users/999/forms/999
+Content-Type: {{contentType}}
+
+{
+    "state": "in_progress"
+}
+
+### Test pagination limits
+GET {{baseUrl}}/users/?skip=0&limit=1000
+
+### Test negative skip value
+GET {{baseUrl}}/users/?skip=-1&limit=10
+
+### Remove form from user
+DELETE {{baseUrl}}/users/1/forms/1
+
+### Delete userWakanda.
+DELETE {{baseUrl}}/users/1
+
+### Delete form
+DELETE {{baseUrl}}/forms/1

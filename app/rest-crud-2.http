@@ -1,0 +1,242 @@
+# api_sequential_flow.http
+### Configuration Variables
+#@baseUrl = http://localhost:8000/api/v1
+#@contentType = application/json
+
+### 1. Health Check
+# Expected: Returns {"status": "healthy"}
+# Purpose: Verify that the API is running
+GET http://localhost:8080/health
+
+### ========== INITIAL SETUP ==========
+
+### 2. Create First User (Teacher)
+# Expected: Returns user object with id=1
+# Purpose: Create our first user who will be a teacher
+POST {{baseUrl}}/users/
+Content-Type: {{contentType}}
+
+{
+    "name": "Jane Smith",
+    "category": "teacher"
+}
+
+### 3. Create Second User (Student)
+# Expected: Returns user object with id=2
+# Purpose: Create a student user who will later be assigned to forms
+POST {{baseUrl}}/users/
+Content-Type: {{contentType}}
+
+{
+    "name": "John Doe",
+    "category": "student"
+}
+
+### 4. Verify Users List
+# Expected: Returns list containing both users
+# Purpose: Confirm both users were created successfully
+GET {{baseUrl}}/users/?skip=0&limit=10
+
+### 5. Create First Form (Survey)
+# Expected: Returns form object with id=1 and state="draft"
+# Purpose: Create a survey form that will be assigned to students
+POST {{baseUrl}}/forms/
+Content-Type: {{contentType}}
+
+{
+    "title": "Course Feedback Survey",
+    "description": "End of semester course feedback",
+    "json_structure": {
+        "questions": [
+            {
+                "id": "q1",
+                "type": "rating",
+                "question": "How would you rate this course?",
+                "options": [1, 2, 3, 4, 5]
+            },
+            {
+                "id": "q2",
+                "type": "text",
+                "question": "What could be improved?"
+            }
+        ]
+    },
+    "category": "course_feedback"
+}
+
+### 6. Create Second Form (Assessment)
+# Expected: Returns form object with id=2 and state="draft"
+# Purpose: Create another form for different testing scenarios
+POST {{baseUrl}}/forms/
+Content-Type: {{contentType}}
+
+{
+    "title": "Programming Skills Assessment",
+    "description": "Python programming skills evaluation",
+    "json_structure": {
+        "sections": [
+            {
+                "id": "basics",
+                "questions": [
+                    {
+                        "id": "b1",
+                        "type": "multiple_choice",
+                        "question": "What is a variable?",
+                        "options": ["A", "B", "C", "D"]
+                    }
+                ]
+            }
+        ]
+    },
+    "category": "assessment"
+}
+
+### 7. Verify Forms List
+# Expected: Returns list containing both forms in "draft" state
+# Purpose: Confirm both forms were created successfully
+GET {{baseUrl}}/forms/?skip=0&limit=10
+
+### ========== FORM STATE MANAGEMENT ==========
+
+### 8. Update First Form to "started" State
+# Expected: Returns updated form with state="started"
+# Purpose: Make the form available for users
+PATCH {{baseUrl}}/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "started"
+}
+
+### ========== USER-FORM ASSIGNMENTS ==========
+
+### 9. Assign First Form to Student
+# Expected: Returns success message
+# Purpose: Allow student to start the survey
+POST {{baseUrl}}/users/2/forms/1
+Content-Type: {{contentType}}
+
+{
+    "json_begin": {
+        "started_at": "2024-01-01T10:00:00Z",
+        "student_year": "sophomore"
+    }
+}
+
+### 10. Verify Student's Forms
+# Expected: Returns list with one form (the survey)
+# Purpose: Confirm form assignment was successful
+GET {{baseUrl}}/users/2/forms/
+
+### ========== FORM RESPONSE FLOW ==========
+
+### 11. Student Starts Working on Form
+# Expected: Returns success message, state updates to "in_progress"
+# Purpose: Record that student has begun the survey
+PATCH {{baseUrl}}/users/2/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "in_progress",
+    "json_response": {
+        "q1": 4,
+        "progress": "50%",
+        "last_updated": "2024-01-01T10:15:00Z"
+    }
+}
+
+### 12. Student Completes Form
+# Expected: Returns success message, state updates to "finished"
+# Purpose: Record completed survey responses
+PATCH {{baseUrl}}/users/2/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "finished",
+    "json_response": {
+        "q1": 4,
+        "q2": "The course was great! Maybe add more practical exercises.",
+        "completed_at": "2024-01-01T10:30:00Z"
+    }
+}
+
+### 13. Teacher Reviews and Analyzes Response
+# Expected: Returns success message, state updates to "analyzed"
+# Purpose: Record teacher's analysis of the survey
+PATCH {{baseUrl}}/users/2/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "analyzed",
+    "json_response": {
+        "q1": 4,
+        "q2": "The course was great! Maybe add more practical exercises.",
+        "completed_at": "2024-01-01T10:30:00Z",
+        "analysis": {
+            "rating_score": 4,
+            "improvement_areas": ["practical_exercises"],
+            "analyzed_by": "Jane Smith",
+            "analyzed_at": "2024-01-01T11:00:00Z"
+        }
+    }
+}
+
+### ========== VERIFICATION ==========
+
+### 14. Final Check of Form Status
+# Expected: Returns form with state="started"
+# Purpose: Verify form is still available for other students
+GET {{baseUrl}}/forms/1
+
+### 15. Final Check of Student's Forms
+# Expected: Returns list with one form showing full response history
+# Purpose: Verify all updates were recorded properly
+GET {{baseUrl}}/users/2/forms/
+
+### ========== ERROR HANDLING TESTS ==========
+
+### 16. Try to Create Invalid User
+# Expected: Returns 422 validation error
+# Purpose: Verify input validation
+POST {{baseUrl}}/users/
+Content-Type: {{contentType}}
+
+{
+    "name": "",
+    "category": ""
+}
+
+### 17. Try Invalid Form State
+# Expected: Returns 422 validation error
+# Purpose: Verify state validation
+PATCH {{baseUrl}}/forms/1
+Content-Type: {{contentType}}
+
+{
+    "state": "invalid_state"
+}
+
+### 18. Try to Access Non-existent User
+# Expected: Returns 404 not found
+# Purpose: Verify error handling for missing resources
+GET {{baseUrl}}/users/999
+
+### 19. Try to Assign Form to Non-existent User
+# Expected: Returns 404 not found
+# Purpose: Verify relationship error handling
+POST {{baseUrl}}/users/999/forms/1
+Content-Type: {{contentType}}
+
+{
+    "json_begin": {}
+}
+
+### 20. Try to Assign Same Form Again
+# Expected: Returns 404 or error message about existing assignment
+# Purpose: Verify duplicate assignment handling
+POST {{baseUrl}}/users/2/forms/1
+Content-Type: {{contentType}}
+
+{
+    "json_begin": {}
+}
