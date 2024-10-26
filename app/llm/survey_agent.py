@@ -97,6 +97,172 @@ Rules:
             return {"error": "Invalid JSON output from the model.", "details": str(inner_e)}
     return survey_structure
 
+def get_broad_to_narrow_survey(keywords_string: str):
+    try:
+        # Create a ChatOpenAI instance
+        model = ChatOpenAI(model="gpt-4o", temperature=0.0)
+
+        example = [
+            {
+                "input": '"office party", "celebration", "festive"',
+                "output": """[
+                    {
+                        "title": "OfficeEventFeedback",
+                        "fields": [
+                            {
+                                "name": "eventSatisfaction",
+                                "label": "How did you feel at the party?",
+                                "type": "slider",
+                                "required": true,
+                                "min": 1,
+                                "max": 10
+                            },
+                            {
+                                "name": "atmosphere",
+                                "label": "How was the food?",
+                                "type": "multiple",
+                                "required": true,
+                                "options": ["Energetic", "Festive", "Welcoming", "Professional", "Creative", "Relaxed", "Boring"]
+                            },
+                            {
+                                "name": "favoriteActivity",
+                                "label": "How would you rate the quantity of the food?",
+                                "type": "multiple",
+                                "required": true,
+                                "options": ["Dancing", "Games", "Karaoke", "Networking", "Photo Booth", "Other"]
+                            },
+                            {
+                                "name": "entertainmentRating",
+                                "label": "How would you rate the taste of the food?",
+                                "type": "slider",
+                                "required": true,
+                                "min": 1,
+                                "max": 5
+                            },
+                            {
+                                "name": "foodAndSnacks",
+                                "label": "Was the food matching with your nutritional goals?",
+                                "type": "slider",
+                                "required": true,
+                                "min": 1,
+                                "max": 5
+                            },
+                            {
+                                "name": "foodQuality",
+                                "label": "How was the music?",
+                                "type": "multiple",
+                                "required": true,
+                                "options": ["Excellent", "Good", "Average", "Poor", "Very Poor"]
+                            },
+                            {
+                                "name": "drinkSelection",
+                                "label": "How would you rate the loudness of the speakers?",
+                                "type": "multiple",
+                                "required": false,
+                                "options": ["Great Variety", "Good", "Limited", "Poor"]
+                            },
+                            {
+                                "name": "overallOrganization",
+                                "label": "How would you rate the quality of the speakers?",
+                                "type": "icon",
+                                "required": true,
+                                "icon": "faStar"
+                            },
+                            {
+                                "name": "eventDuration",
+                                "label": "Was the choice of songs in line with your preferences?",
+                                "type": "multiple",
+                                "required": true,
+                                "options": ["Too Short", "Just Right", "Too Long"]
+                            }
+                        ]
+                    }
+                ]"""
+           }
+        ]
+
+        # Create a prompt template for each example
+        example_prompt = ChatPromptTemplate.from_messages([
+            ("human", "Keywords:\n{input}"),
+            ("ai", "{output}")
+        ])
+
+        # Create the few-shot prompt template
+        few_shot_prompt = FewShotChatMessagePromptTemplate(
+            example_prompt=example_prompt,
+            examples=example
+        )
+
+        system_prompt = """You are an AI survey generator specialized in creating structured feedback surveys for various employee-related topics.
+
+            When provided with keywords describing an event, initiative, or topic, you will:
+
+            - **Generate a tree-like structure of questions with a height of 3**:
+                - Pick very few broad topics and follow the following procedure for each:
+                    - ask an open question about the topic.
+                    - follow up with a few questions a bit more specific.
+                    - after every second level question, ask a few detailed questions.
+                - You should end up with about 1 to 3 broad open questions, then, for each of them you should generate 2 to 4 questions a bit more specific. Finally, you will generate about 3 to 5 detailed questions meant to clarify the topic further.
+
+            - **Tailor Questions to the Topic**: Adapt survey questions based on the provided keywords, covering a range of potential scenarios, such as:
+                - **Social Events** (e.g., office parties, team outings): Focus on satisfaction, atmosphere, activities, and social engagement.
+                - **Leadership Changes** (e.g., new manager/director introductions): Focus on first impressions, communication style, team alignment, and leadership qualities.
+                - **Professional Development** (e.g., workshops, training sessions): Include questions on content relevance, interactivity, facilitation, and practical application.
+                - **Workplace Feedback** (e.g., work environment, culture surveys): Cover areas such as job satisfaction, team culture, workspace, and management support.
+
+            - **Diverse Question Types**:
+                - Use a combination of **sliders** (e.g., for ratings), **multiple-choice** (e.g., describing specific attributes), **checkboxes** (for simple yes/no questions), **icons** (e.g., star ratings), and **text fields** (for open-ended responses).
+                - Include essential feedback areas such as **overall experience**, **specific highlights**, **areas for improvement**, and **additional comments** for each topic.
+
+            - **Output Requirements**:
+                - Generate valid JSON in a structured format, including `title` and `fields`.
+                - Each field should specify `name`, `label`, `type`, and additional attributes as appropriate (e.g., `options` for multiple-choice).
+                - Return strictly JSON output with no extraneous text or comments.
+                - Make sure there are no dupplicates and every question is different enough in meaning.
+
+            Example Usage:
+            - For keywords like "new manager, leadership, feedback," the survey should include questions on leadership style, team morale, communication, and onboarding experience.
+            - For keywords like "office party, celebration, team bonding," the survey should focus on enjoyment, activities, and event organization.
+
+            Remember to adapt each survey to align with the context and feedback goals of the provided keywords.
+            """
+
+        # Create the final prompt template with specific instructions for event-themed surveys
+        final_prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
+
+            few_shot_prompt,
+
+            ("human", "Keywords:\n{input}")
+        ])
+
+        # Use the prompt with the model
+        response = model.invoke(final_prompt.format_messages(input=keywords_string))
+
+        # Parse the response content to ensure it's valid JSON
+        try:
+            survey_structure = json.loads(response.content)
+        except json.JSONDecodeError as e:
+            # If the assistant's response is not valid JSON, attempt to extract the JSON part
+            try:
+                json_start = response.content.find('[')
+                json_end = response.content.rfind(']')
+                if json_start != -1 and json_end != -1:
+                    survey_structure = json.loads(response.content[json_start:json_end + 1])
+                else:
+                    return {"error": "Invalid JSON output from the model.", "details": str(e)}
+            except Exception as inner_e:
+                traceback.print_exc()
+                return {"error": "Invalid JSON output from the model.", "details": str(inner_e)}
+
+        return survey_structure
+    except Exception as e:
+        traceback.print_exc()
+        print(f"Unexpected error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
 
 def get_survey(keywords_string: str):
     try:
@@ -472,9 +638,7 @@ def get_survey(keywords_string: str):
             examples=examples
         )
 
-        # Create the final prompt template with specific instructions for event-themed surveys
-        final_prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an AI survey generator specialized in creating structured feedback surveys for various employee-related topics.
+        system_prompt = """You are an AI survey generator specialized in creating structured feedback surveys for various employee-related topics.
 
             When provided with keywords describing an event, initiative, or topic, you will:
 
@@ -498,7 +662,11 @@ def get_survey(keywords_string: str):
             - For keywords like "office party, celebration, team bonding," the survey should focus on enjoyment, activities, and event organization.
 
             Remember to adapt each survey to align with the context and feedback goals of the provided keywords.
-            """),
+            """
+
+        # Create the final prompt template with specific instructions for event-themed surveys
+        final_prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
 
             few_shot_prompt,
 
