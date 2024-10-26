@@ -48,7 +48,7 @@ async def log_requests(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,43 +65,8 @@ async def health_check():
     return {"status": "healthy"}
 
 
-# def start():
-#     """Launched with `poetry run start` at root level"""
-#     uvicorn.run("app.main:app", host="0.0.0.0", port=8080, reload=True)
-#
-#
 def main():
     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
-
-
-# def main():
-#     ngrok_token = os.environ.get("NGROK_AUTH_TOKEN")
-#     if not ngrok_token:
-#         logger.error("NGROK_AUTH_TOKEN environment variable is not set")
-#         raise ValueError("NGROK_AUTH_TOKEN environment variable is not set")
-#
-#     custom_domain = "magnetic-wombat-centrally.ngrok-free.app"
-#
-#     try:
-#         listener = ngrok.connect(8080, domain=custom_domain)
-#         public_url = listener.public_url
-#         logger.info(f"ngrok tunnel established: {public_url}")
-#
-#         response = requests.get(f"{public_url}")
-#         if response.status_code == 200:
-#             logger.info("Successfully connected to the ngrok tunnel!")
-#             logger.info(f"Response from server: {response.json()}")
-#         else:
-#             logger.error(f"Failed to connect to the ngrok tunnel. Status code: {response.status_code}")
-#
-#         uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
-#
-#     except ngrok.PyngrokError as e:
-#         logger.error(f"ngrok error: {str(e)}")
-#     except requests.RequestException as e:
-#         logger.error(f"Error testing the connection: {str(e)}")
-#     except Exception as e:
-#         logger.error(f"An unexpected error occurred: {str(e)}")
 
 
 if __name__ == "__main__":
