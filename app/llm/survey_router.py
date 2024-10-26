@@ -113,46 +113,46 @@ async def analyze_text(input_data: TextInput):
     }
 
 
-#
-# @survey_router.post("/analyze-text-survey")
-# async def analyze_text(input_data: TextInput):
-#     keywords = await generate_keywords(input_data.text)
-#
-#     async with httpx.AsyncClient() as client:
-#         # Generate survey structure
-#         survey_prompt = {
-#             "model": "gpt-4o",
-#             "messages": [
-#                 {"role": "system", "content": """Based on the provided keywords, create a survey structure as a JSON object exactly matching this format:
-#                 {
-#                     "personalInfo": {
-#                         "firstName": "text",
-#                         "lastName": "text",
-#                         "age": "number"
-#                     },
-#                     "employmentStatus": "select",
-#                     "employerDetails": {
-#                         "companyName": "text",
-#                         "position": "text",
-#                         "yearsEmployed": "number"
-#                     },
-#                     "educationLevel": "select",
-#                     "degrees": "multiple"
-#                 }
-#                 Make the survey relevant to these keywords."""},
-#                 {"role": "user", "content": f"Create a survey structure based on these keywords: {', '.join(keywords)}"}
-#             ],
-#             "response_format": {"type": "json_object"}
-#         }
-#         survey_response = await client.post(OPENAI_URL, json=survey_prompt,
-#                                             headers={"Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"})
-#         survey_structure = survey_response.json()['choices'][0]['message']['content']
-#
-#     return {
-#         "originalText": input_data.text,
-#         "extractedKeywords": keywords,
-#         "surveyStructure": json.loads(survey_structure)
-#     }
+
+@survey_router.post("/generate_simple_fields")
+async def generate_fields(input_data: TextInput):
+    keywords = await generate_keywords(input_data.text)
+
+    async with httpx.AsyncClient() as client:
+        # Generate survey structure
+        survey_prompt = {
+            "model": "gpt-4o",
+            "messages": [
+                {"role": "system", "content": """Based on the provided keywords, create a survey structure as a JSON object exactly matching this format:
+                {
+                    "personalInfo": {
+                        "firstName": "text",
+                        "lastName": "text",
+                        "age": "number"
+                    },
+                    "employmentStatus": "select",
+                    "employerDetails": {
+                        "companyName": "text",
+                        "position": "text",
+                        "yearsEmployed": "number"
+                    },
+                    "educationLevel": "select",
+                    "degrees": "multiple"
+                }
+                Make the survey relevant to these keywords."""},
+                {"role": "user", "content": f"Create a survey structure based on these keywords: {', '.join(keywords)}"}
+            ],
+            "response_format": {"type": "json_object"}
+        }
+        survey_response = await client.post(OPENAI_URL, json=survey_prompt,
+                                            headers={"Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"})
+        survey_structure = survey_response.json()['choices'][0]['message']['content']
+
+    return {
+        "originalText": input_data.text,
+        "extractedKeywords": keywords,
+        "surveyStructure": json.loads(survey_structure)
+    }
 
 
 @survey_router.post("/analyze-voice")
