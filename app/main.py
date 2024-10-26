@@ -1,29 +1,21 @@
-# app/main.py
-import json
+import logging
 import os
-import tempfile
+import time
+
+import uvicorn
+from dotenv import load_dotenv
+from fastapi import FastAPI
 from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
-import time
-import requests
-from dotenv import load_dotenv
-from app.llm.survey_agent import get_survey
-import uvicorn
-from fastapi import FastAPI, Body
-from fastapi import FastAPI, UploadFile, File
-import base64
-import httpx
-import os
-from pyngrok import ngrok
-import openai
-from fastapi import UploadFile, HTTPException
-import logging
-from openai import OpenAI, OpenAIError
-from fastapi import UploadFile, HTTPException
-import logging
+from openai import OpenAI
 
+from app.api.v1.endpoints import forms  # Add sections import
+from app.core.config import settings
+from app.core.database import Base, engine
 from app.llm.survey_router import survey_router
 
+# Create database tables
+Base.metadata.create_all(bind=engine)
 # Load .env file at startup
 # Since your .env is at the root level (same level as the app directory),
 # we need to adjust the path accordingly
@@ -33,16 +25,26 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 app.include_router(survey_router, prefix="/api", tags=["survey"])
+
+app.include_router(
+    forms.router,
+    prefix=settings.API_V1_STR + "/forms",
+    tags=["forms"]
+)
+
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 client = OpenAI()
+
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
-    logger.info(f"Request: {request.method} {request.url.path} - Status: {response.status_code} - Time: {process_time:.2f}s")
+    logger.info(
+        f"Request: {request.method} {request.url.path} - Status: {response.status_code} - Time: {process_time:.2f}s")
     return response
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -52,13 +54,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def read_root():
     return {"message": "Hello World"}
 
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
 
 # def start():
 #     """Launched with `poetry run start` at root level"""
@@ -67,6 +72,7 @@ async def health_check():
 #
 def main():
     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
+
 
 # def main():
 #     ngrok_token = os.environ.get("NGROK_AUTH_TOKEN")
