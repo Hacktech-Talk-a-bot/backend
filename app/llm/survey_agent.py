@@ -1,7 +1,11 @@
 # app/main.py
 import json
 import os
+import re
 import traceback
+from typing import List, Optional
+from pydantic import BaseModel
+import json
 
 import httpx
 from fastapi import HTTPException
@@ -10,8 +14,88 @@ from langchain.prompts import ChatPromptTemplate, FewShotChatMessagePromptTempla
 from openai import OpenAI
 from pydantic import BaseModel
 
+from app.llm.models import SurveyResponse, SurveyField
+
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 client = OpenAI()
+
+
+def clean_and_parse_json(response_content: str) -> dict:
+    """Clean JSON string of any extra tags/text and parse it."""
+    try:
+        # First attempt: direct JSON parse
+        return json.loads(response_content)
+    except json.JSONDecodeError:
+        try:
+            # Find content between first { and last }
+            json_content = re.search(r'{.*}', response_content, re.DOTALL)
+            if json_content:
+                cleaned_json = json_content.group(0)
+                # Remove any code block markers or other tags
+                cleaned_json = re.sub(r'^```json\s*|^```\s*|\s*```$', '', cleaned_json.strip())
+                return json.loads(cleaned_json)
+
+            # If no {} found, try [] for arrays
+            json_content = re.search(r'\[.*\]', response_content, re.DOTALL)
+            if json_content:
+                cleaned_json = json_content.group(0)
+                cleaned_json = re.sub(r'^```json\s*|^```\s*|\s*```$', '', cleaned_json.strip())
+                return json.loads(cleaned_json)
+
+            raise ValueError("No JSON content found")
+
+        except Exception as e:
+            traceback.print_exc()
+            return {"error": "Invalid JSON output from the model.", "details": str(e)}
+
+
+def rewrite_section(survey_json: SurveyResponse, survey_field: SurveyField):
+    """Return both entities as separate JSON strings."""
+
+    survey_json = survey_json.model_dump_json(indent=2),
+    field_json = survey_field.model_dump_json(indent=2)
+
+    model = ChatOpenAI(model="gpt-4o", temperature=0.0)
+
+    final_prompt = ChatPromptTemplate.from_messages([
+        ("system",
+         """
+You are a helpful assistant that creates event feedback surveys. 
+
+
+Your Task:
+Your task is to rewrite the provided JSON subsection into another section that matches the topic, style, direction of the Form however, it does not have to be the exact same type or ask the same question.
+
+Rules:
+- The new section should be a valid JSON object.
+- The new section should match the style, topic, direction of the form however, it does not have to be the exact same type or ask the same question.
+- The new section should not be the same as the original section.
+- The full form will be surrounded by a the <FORM></FORM> tags.
+- The section will be surrounded by a the <FIELD></FIELD> tags.
+- You will respond only with the required JSON object, absolutely no additional text.
+"""),
+        # few_shot_prompt,
+        ("human", "<FORM>:{form}</FORM>, <FIELD>:{field}</FIELD>")
+    ])
+
+    response = model.invoke(final_prompt.format_messages(form=survey_json, field=field_json))
+
+    try:
+        survey_structure = clean_and_parse_json(response.content)
+    except json.JSONDecodeError as e:
+        # If the assistant's response is not valid JSON, attempt to extract the JSON part
+        try:
+            json_start = response.content.find('[')
+            json_end = response.content.rfind(']')
+            if json_start != -1 and json_end != -1:
+                json_extracted = json.loads(response.content[json_start:json_end + 1])
+                survey_structure = json_extracted
+            else:
+                return {"error": "Invalid JSON output from the model.", "details": str(e)}
+        except Exception as inner_e:
+            traceback.print_exc()
+            return {"error": "Invalid JSON output from the model.", "details": str(inner_e)}
+    return survey_structure
 
 
 def get_survey(keywords_string: str):

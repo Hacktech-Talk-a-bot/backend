@@ -15,45 +15,16 @@ from fastapi import UploadFile
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-from app.llm.survey_agent import get_survey, generate_keywords, TextInput
+from app.llm.models import SurveyResponse, KeywordsInput, SurveyField
+from app.llm.survey_agent import get_survey, generate_keywords, TextInput, rewrite_section
 
 logger = logging.getLogger(__name__)
-
 
 app = FastAPI()
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 client = OpenAI()
 MODEL = "gpt-4o"
 survey_router = APIRouter()
-
-
-class SurveyField(BaseModel):
-    name: str
-    label: str
-    type: str
-    required: bool
-    options: Optional[List[str]] = None
-    icon: Optional[str] = None
-    multiline: Optional[bool] = None
-    min: Optional[int] = None
-    max: Optional[int] = None
-
-
-class SurveySection(BaseModel):
-    title: str
-    fields: List[SurveyField]
-
-
-class SurveyResponse(BaseModel):
-    survey: List[SurveySection]
-
-
-class KeywordsInput(BaseModel):
-    keywords: str = Field(
-        ...,
-        description="Comma-separated keywords for survey generation",
-        example='"office party", "celebration", "design"'
-    )
 
 
 @survey_router.post("/survey", response_model=SurveyResponse)
@@ -260,6 +231,30 @@ async def analyze_voice_survey(audio_file: UploadFile = File(...)):
         traceback.print_exc()
         logger.error(f"Error in analyze_voice: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@survey_router.post("/regenerate-section")
+async def regenerate_section(survey: SurveyResponse, survey_section: SurveyField) -> SurveyField:
+    """
+    Endpoint to regenerate a survey section.
+
+    Args:
+        survey: Complete survey response
+        survey_section: Section to regenerate
+
+    Returns:
+        SurveyField: New regenerated survey field
+    """
+    try:
+        new_field = rewrite_section(survey, survey_section)
+        return new_field
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error: {str(e)}"
+        )
 
 # @survey_router.post("/generate-keywords")
 # async def generate_keywords_endpoint(input_data: TextInput):
