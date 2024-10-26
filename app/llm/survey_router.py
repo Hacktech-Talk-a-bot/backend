@@ -48,7 +48,7 @@ async def generate_keywords_endpoint(input_data: TextInput):
     return {"keywords": keywords}
 
 
-@survey_router.post("/analyze-image-survey")
+@survey_router.post("/analyze-image")
 async def analyze_image(file: UploadFile = File(...)):
     contents = await file.read()
     base64_image = base64.b64encode(contents).decode('utf-8')
@@ -155,7 +155,7 @@ async def analyze_text(input_data: TextInput):
 #     }
 
 
-@survey_router.post("/analyze-voice-survey")
+@survey_router.post("/analyze-voice")
 async def analyze_voice_survey(audio_file: UploadFile = File(...)):
     allowed_extensions = ['.flac', '.m4a', '.mp3', '.mp4', '.mpeg', '.mpga', '.oga', '.ogg', '.wav', '.webm']
     file_ext = os.path.splitext(audio_file.filename)[1].lower()
