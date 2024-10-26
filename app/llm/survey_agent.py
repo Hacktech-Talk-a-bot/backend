@@ -52,7 +52,7 @@ def clean_and_parse_json(response_content: str) -> dict:
 def rewrite_section(survey_json: SurveyResponse, survey_field: SurveyField):
     """Return both entities as separate JSON strings."""
 
-    survey_json = survey_json.model_dump_json(indent=2),
+    survey_json = survey_json.model_dump_json(indent=2)
     field_json = survey_field.model_dump_json(indent=2)
 
     model = ChatOpenAI(model="gpt-4o", temperature=0.0)
@@ -73,7 +73,10 @@ Rules:
 - The full form will be surrounded by a the <FORM></FORM> tags.
 - The section will be surrounded by a the <FIELD></FIELD> tags.
 - You will respond only with the required JSON object, absolutely no additional text.
+
+
 """),
+
         # few_shot_prompt,
         ("human", "<FORM>:{form}</FORM>, <FIELD>:{field}</FIELD>")
     ])
