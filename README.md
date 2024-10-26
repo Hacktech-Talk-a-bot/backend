@@ -11,3 +11,6 @@ poetry install
 
 # Activate the virtual environment
 poetry shell
+
+# Run project
+poetry run start 
