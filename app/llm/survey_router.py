@@ -57,64 +57,23 @@ class KeywordsInput(BaseModel):
 
 
 @survey_router.post("/survey", response_model=SurveyResponse)
-async def get_survey_call(keywords: KeywordsInput = Body(...)):
+async def generate_survey(keywords: str = Body(..., embed=True)):
     """
-    Endpoint to generate an event-themed survey structure based on provided keywords.
+    Endpoint to generate a survey JSON structure based on keywords provided.
 
     Args:
-        keywords (KeywordsInput): A Pydantic model containing keywords for survey generation.
+        keywords (str): A comma-separated string representing survey-related keywords.
 
     Returns:
-        SurveyResponse: A Pydantic model containing the generated survey structure.
-
-    Raises:
-        HTTPException: If survey generation fails or invalid input is provided.
+        dict: A dictionary containing the generated survey JSON.
     """
     try:
-        # Validate keywords
-        if not keywords.keywords.strip():
-            raise HTTPException(
-                status_code=400,
-                detail="Keywords string cannot be empty"
-            )
-
-        # Generate survey
-        survey_json = get_survey(keywords.keywords)
-
-        # Validate survey structure
-        if not isinstance(survey_json, list) or not survey_json:
-            raise HTTPException(
-                status_code=500,
-                detail="Invalid or empty survey structure generated"
-            )
-
-        # Create response using Pydantic model
-        response = SurveyResponse(survey=survey_json)
-
-        # Log successful generation
-        logger.info(f"Successfully generated survey for keywords: {keywords.keywords}")
-
-        return response
-
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON parsing error: {str(e)}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid JSON format: {str(e)}"
-        )
-    except ValueError as e:
-        logger.error(f"Validation error: {str(e)}")
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
+        # Use the get_survey function with the provided keywords
+        survey_json = get_survey(keywords)
+        return {"survey": survey_json}
     except Exception as e:
-        logger.error(f"Unexpected error in survey generation: {str(e)}")
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=500,
-            detail=f"An unexpected error occurred: {str(e)}"
-        )
+        logger.error(f"Error generating survey: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 
 @survey_router.post("/analyze-image")

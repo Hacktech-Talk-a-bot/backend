@@ -24,46 +24,219 @@ def get_survey(keywords_string: str):
                 "input": '"office party", "celebration", "festive"',
                 "output": """[
             {
-                "title": "Event Feedback",
+                "title": "OfficeEventFeedback",
                 "fields": [
-                    { 
-                        "name": "eventSatisfaction", 
-                        "label": "How would you rate the overall event?", 
-                        "type": "slider", 
-                        "required": true,
-                        "min": 1,
-                        "max": 5
-                    },
+                    {
+                    "name": "eventSatisfaction",
+                    "label": "How would you rate the overall event?",
+                    "type": "slider",
+                    "required": true,
+                    "min": 1,
+                    "max": 10
+                     },
                     {
                         "name": "atmosphere",
                         "label": "How would you describe the atmosphere?",
                         "type": "multiple",
                         "required": true,
-                        "options": ["Energetic", "Festive", "Welcoming", "Professional", "Creative"]
+                        "options": ["Energetic", "Festive", "Welcoming", "Professional", "Creative", "Relaxed", "Boring"]
+                    },
+                    {
+                        "name": "favoriteActivity",
+                        "label": "What was your favorite activity during the event?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Dancing", "Games", "Karaoke", "Networking", "Photo Booth", "Other"]
+                    },
+                    {
+                        "name": "entertainmentRating",
+                        "label": "How would you rate the entertainment provided?",
+                        "type": "slider",
+                        "required": true,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "foodAndSnacks",
+                        "label": "How satisfied were you with the food and snacks provided?",
+                        "type": "slider",
+                        "required": true,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "foodQuality",
+                        "label": "How would you describe the quality of the food?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Excellent", "Good", "Average", "Poor", "Very Poor"]
+                    },
+                    {
+                        "name": "drinkSelection",
+                        "label": "How was the selection of drinks?",
+                        "type": "multiple",
+                        "required": false,
+                        "options": ["Great Variety", "Good", "Limited", "Poor"]
+                    },
+                    {
+                        "name": "overallOrganization",
+                        "label": "How would you rate the overall organization of the event?",
+                        "type": "icon",
+                        "required": true,
+                        "icon": "faStar"
+                    },
+                    {
+                        "name": "eventDuration",
+                        "label": "Was the event duration appropriate?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Too Short", "Just Right", "Too Long"]
+                    },
+                    {
+                        "name": "networkingOpportunities",
+                        "label": "How would you rate the networking opportunities at the event?",
+                        "type": "slider",
+                        "required": false,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "decorationFeedback",
+                        "label": "Did you like the event decorations?",
+                        "type": "checkbox",
+                        "required": true
+                    },
+                    {
+                        "name": "improvementSuggestions",
+                        "label": "Any suggestions for making future office parties better?",
+                        "type": "text",
+                        "required": false,
+                        "multiline": true
+                    },
+                    {
+                        "name": "additionalComments",
+                        "label": "Any other comments or feedback?",
+                        "type": "text",
+                        "required": false,
+                        "multiline": true
                     }
                 ]
             }
         ]"""
             },
             {
-                "input": '"design", "theme", "creative"',
+                "input": '"work environment", "employee satisfaction", "workplace culture"',
                 "output": """[
             {
-                "title": "Design & Theme Feedback",
+                "title": "Work Environment Feedback Survey",
                 "fields": [
                     {
-                        "name": "themeRating",
-                        "label": "Rate the event's theme and decorations",
+                        "name": "overallSatisfaction",
+                        "label": "How satisfied are you with your current work environment?",
+                        "type": "slider",
+                        "required": true,
+                        "min": 1,
+                        "max": 10
+                    },
+                    {
+                        "name": "workLifeBalance",
+                        "label": "How would you rate your work-life balance?",
+                        "type": "slider",
+                        "required": true,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "physicalWorkspace",
+                        "label": "How satisfied are you with the physical workspace (e.g., office, desk, amenities)?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"]
+                    },
+                    {
+                        "name": "teamCulture",
+                        "label": "How would you describe the culture within your team?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Collaborative", "Supportive", "Competitive", "Toxic", "Disconnected"]
+                    },
+                    {
+                        "name": "managementFeedback",
+                        "label": "How effective is your direct supervisor in supporting your needs?",
+                        "type": "slider",
+                        "required": true,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "communicationSatisfaction",
+                        "label": "How would you rate communication within the company?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Excellent", "Good", "Fair", "Poor"]
+                    },
+                    {
+                        "name": "growthOpportunities",
+                        "label": "Do you feel you have enough opportunities for professional growth?",
+                        "type": "checkbox",
+                        "required": true
+                    },
+                    {
+                        "name": "trainingAndDevelopment",
+                        "label": "How satisfied are you with the training and development programs offered?",
+                        "type": "slider",
+                        "required": false,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "workplaceSafety",
+                        "label": "Do you feel the workplace environment is safe (e.g., health and safety, mental well-being)?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Very Safe", "Safe", "Neutral", "Unsafe", "Very Unsafe"]
+                    },
+                    {
+                        "name": "recognitionFeedback",
+                        "label": "Do you feel your contributions are recognized and appreciated?",
                         "type": "icon",
                         "required": true,
                         "icon": "faStar"
                     },
                     {
-                        "name": "favoriteElements",
-                        "label": "What were your favorite design elements?",
+                        "name": "stressFactors",
+                        "label": "What are the main factors that contribute to your work-related stress?",
                         "type": "multiple",
                         "required": false,
-                        "options": ["Colors", "Decorations", "Layout", "Lighting", "Music"]
+                        "options": ["Workload", "Deadlines", "Lack of Support", "Management", "Coworkers", "Other"]
+                    },
+                    {
+                        "name": "flexibilityPreference",
+                        "label": "Would you like more flexibility in terms of work location or hours?",
+                        "type": "checkbox",
+                        "required": true
+                    },
+                    {
+                        "name": "remoteWorkSupport",
+                        "label": "How well does the company support remote work (if applicable)?",
+                        "type": "slider",
+                        "required": false,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "suggestionsForImprovement",
+                        "label": "Do you have any suggestions for improving the work environment?",
+                        "type": "text",
+                        "required": false,
+                        "multiline": true
+                    },
+                    {
+                        "name": "additionalComments",
+                        "label": "Any other comments or feedback you would like to share?",
+                        "type": "text",
+                        "required": false,
+                        "multiline": true
                     }
                 ]
             }
@@ -91,7 +264,116 @@ def get_survey(keywords_string: str):
                 ]
             }
         ]"""
+            },
+            {
+                "input": '"workshop", "learning", "interactive"',
+                "output": """[
+            {
+                "title": "Workshop Feedback",
+                "fields": [
+                    {
+                        "name": "learningExperience",
+                        "label": "How would you rate the overall learning experience?",
+                        "type": "slider",
+                        "required": true,
+                        "min": 1,
+                        "max": 10
+                    },
+                    {
+                        "name": "contentRelevance",
+                        "label": "How relevant was the workshop content to your needs?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Extremely Relevant", "Very Relevant", "Somewhat Relevant", "Not Relevant"]
+                    },
+                    {
+                        "name": "facilitatorEngagement",
+                        "label": "How well did the facilitator engage the participants?",
+                        "type": "icon",
+                        "required": true,
+                        "icon": "faStar"
+                    },
+                    {
+                        "name": "interactiveElements",
+                        "label": "How engaging were the interactive elements (e.g., group activities, discussions)?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Excellent", "Good", "Average", "Poor", "None"]
+                    },
+                    {
+                        "name": "paceOfWorkshop",
+                        "label": "Was the pace of the workshop appropriate?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Too Fast", "Just Right", "Too Slow"]
+                    },
+                    {
+                        "name": "practicalApplication",
+                        "label": "How confident are you in applying what you learned?",
+                        "type": "slider",
+                        "required": true,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "favoriteActivity",
+                        "label": "Which activity did you find most beneficial?",
+                        "type": "multiple",
+                        "required": false,
+                        "options": ["Hands-On Activity", "Discussion Groups", "Case Studies", "Q&A Session", "Lecture Segment"]
+                    },
+                    {
+                        "name": "futureTopics",
+                        "label": "What topics would you like to see covered in future workshops?",
+                        "type": "text",
+                        "required": false,
+                        "multiline": true
+                    },
+                    {
+                        "name": "suggestedImprovements",
+                        "label": "Do you have any suggestions for improving future workshops?",
+                        "type": "text",
+                        "required": false,
+                        "multiline": true
+                    },
+                    {
+                        "name": "resourcesProvided",
+                        "label": "How would you rate the quality of the materials and resources provided?",
+                        "type": "slider",
+                        "required": true,
+                        "min": 1,
+                        "max": 5
+                    },
+                    {
+                        "name": "engagementTools",
+                        "label": "How effective were the tools (e.g., slides, handouts, digital tools) used for engagement?",
+                        "type": "multiple",
+                        "required": true,
+                        "options": ["Very Effective", "Effective", "Somewhat Effective", "Not Effective"]
+                    },
+                    {
+                        "name": "networkingOpportunities",
+                        "label": "Were there sufficient opportunities for networking with other participants?",
+                        "type": "checkbox",
+                        "required": false
+                    },
+                    {
+                        "name": "futureParticipation",
+                        "label": "Would you be interested in attending similar workshops in the future?",
+                        "type": "checkbox",
+                        "required": true
+                    },
+                    {
+                        "name": "additionalComments",
+                        "label": "Any other comments or feedback you would like to share?",
+                        "type": "text",
+                        "required": false,
+                        "multiline": true
+                    }
+                ]
             }
+        ]"""
+           }
         ]
 
         # Create a prompt template for each example
@@ -108,11 +390,34 @@ def get_survey(keywords_string: str):
 
         # Create the final prompt template with specific instructions for event-themed surveys
         final_prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a helpful assistant that creates event feedback surveys. 
-            Convert the provided keywords into a structured survey JSON focused on gathering feedback about 
-            office events, parties, and creative celebrations. Include questions about atmosphere, 
-            design elements, and overall experience. Always output valid JSON without any additional text."""),
+            ("system", """You are an AI survey generator specialized in creating structured feedback surveys for various employee-related topics.
+
+            When provided with keywords describing an event, initiative, or topic, you will:
+
+            - **Tailor Questions to the Topic**: Adapt survey questions based on the provided keywords, covering a range of potential scenarios, such as:
+                - **Social Events** (e.g., office parties, team outings): Focus on satisfaction, atmosphere, activities, and social engagement.
+                - **Leadership Changes** (e.g., new manager/director introductions): Focus on first impressions, communication style, team alignment, and leadership qualities.
+                - **Professional Development** (e.g., workshops, training sessions): Include questions on content relevance, interactivity, facilitation, and practical application.
+                - **Workplace Feedback** (e.g., work environment, culture surveys): Cover areas such as job satisfaction, team culture, workspace, and management support.
+
+            - **Diverse Question Types**:
+                - Use a combination of **sliders** (e.g., for ratings), **multiple-choice** (e.g., describing specific attributes), **checkboxes** (for simple yes/no questions), **icons** (e.g., star ratings), and **text fields** (for open-ended responses).
+                - Include essential feedback areas such as **overall experience**, **specific highlights**, **areas for improvement**, and **additional comments** for each topic.
+
+            - **Output Requirements**:
+                - Generate valid JSON in a structured format, including `title` and `fields`.
+                - Each field should specify `name`, `label`, `type`, and additional attributes as appropriate (e.g., `options` for multiple-choice).
+                - Return strictly JSON output with no extraneous text or comments.
+
+            Example Usage:
+            - For keywords like "new manager, leadership, feedback," the survey should include questions on leadership style, team morale, communication, and onboarding experience.
+            - For keywords like "office party, celebration, team bonding," the survey should focus on enjoyment, activities, and event organization.
+
+            Remember to adapt each survey to align with the context and feedback goals of the provided keywords.
+            """),
+
             few_shot_prompt,
+
             ("human", "Keywords:\n{input}")
         ])
 
