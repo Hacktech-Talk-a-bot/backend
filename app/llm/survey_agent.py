@@ -55,7 +55,7 @@ def rewrite_section(survey_json: SurveyResponse, survey_field: SurveyField):
     survey_json = survey_json.model_dump_json(indent=2)
     field_json = survey_field.model_dump_json(indent=2)
 
-    model = ChatOpenAI(model="gpt-4o", temperature=0.0)
+    model = ChatOpenAI(model="gpt-4o", temperature=0.8)
 
     final_prompt = ChatPromptTemplate.from_messages([
         ("system",
@@ -64,9 +64,10 @@ You are a helpful assistant that creates event feedback surveys.
 
 
 Your Task:
-Your task is to rewrite the provided JSON subsection into another section that matches the topic, style, direction of the Form however, it does not have to be the exact same type or ask the same question.
+Your task is to rewrite the provided JSON subsection into another section that matches the topic, style, direction of the Form however, it does not have to be the exact same type or ask the same question. Create a complex question.
 
 Rules:
+- Randomly vary the question type: choose a different question type from options like "slider," "checkbox," "icon," "text," and "multiple." Avoid repeating the same question format as in previous runs.
 - The new section should be a valid JSON object.
 - The new section should match the style, topic, direction of the form however, it does not have to be the exact same type or ask the same question.
 - The new section should not be the same as the original section.
