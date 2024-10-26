@@ -77,8 +77,6 @@ Rules:
 
 
 """),
-
-        # few_shot_prompt,
         ("human", "<FORM>:{form}</FORM>, <FIELD>:{field}</FIELD>")
     ])
 
@@ -461,7 +459,7 @@ def get_survey(keywords_string: str):
                 ]
             }
         ]"""
-           }
+            }
         ]
 
         # Create a prompt template for each example
