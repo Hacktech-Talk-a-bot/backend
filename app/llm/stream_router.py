@@ -7,6 +7,8 @@ from pydantic import BaseModel
 import httpx
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from typing import List, Dict, Optional
+
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
@@ -69,6 +71,75 @@ After your planning, provide the complete HTML code, including all necessary CSS
 
 Remember, the success of your visualization will be judged on both its technical correctness and its ability to provide meaningful insights into the survey data."""
 
+# Define the few-shot examples structure
+FEW_SHOT_EXAMPLES = [
+    {
+        "role": "user",
+        "content": '<survey_structure>[{title:"Reward and Recognition Feedback Survey",fields:[{name:"programAwareness",label:"How aware are you of the current reward and recognition programs in place?",type:"multiple",required:true,options:["Very Aware","Somewhat Aware","Not Very Aware","Not Aware at All"],icon:null,multiline:null,min:null,max:null},{name:"programSatisfaction",label:"How satisfied are you with the current reward and recognition programs?",type:"slider",required:true,options:null,icon:null,multiline:null,min:1,max:10},{name:"fairness",label:"Do you feel the reward and recognition process is fair?",type:"multiple",required:true,options:["Very Fair","Fair","Neutral","Unfair","Very Unfair"],icon:null,multiline:null,min:null,max:null},{name:"motivationImpact",label:"How much do the reward and recognition programs motivate you to perform better?",type:"slider",required:true,options:null,icon:null,multiline:null,min:1,max:5},{name:"recognitionFrequency",label:"How often do you receive recognition for your work?",type:"multiple",required:true,options:["Very Often","Often","Sometimes","Rarely","Never"],icon:null,multiline:null,min:null,max:null},{name:"preferredRecognitionType",label:"What type of recognition do you value the most?",type:"multiple",required:true,options:["Public Acknowledgment","Private Praise","Monetary Rewards","Career Advancement Opportunities","Other"],icon:null,multiline:null,min:null,max:null},{name:"programEffectiveness",label:"How effective do you think the current programs are in recognizing employee achievements?",type:"icon",required:true,options:null,icon:"faStar",multiline:null,min:null,max:null},{name:"improvementSuggestions",label:"What improvements would you suggest for the reward and recognition programs?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null},{name:"peerRecognition",label:"Do you feel encouraged to recognize your peers?",type:"checkbox",required:true,options:null,icon:null,multiline:null,min:null,max:null},{name:"managerRecognition",label:"How often does your manager recognize your contributions?",type:"multiple",required:true,options:["Very Often","Often","Sometimes","Rarely","Never"],icon:null,multiline:null,min:null,max:null},{name:"programClarity",label:"Is the criteria for receiving rewards and recognition clear to you?",type:"checkbox",required:true,options:null,icon:null,multiline:null,min:null,max:null},{name:"recognitionImpact",label:"Can you provide an example of a time when recognition positively impacted your work?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null},{name:"programAccessibility",label:"How accessible do you find the reward and recognition programs?",type:"multiple",required:true,options:["Very Accessible","Accessible","Somewhat Accessible","Not Accessible"],icon:null,multiline:null,min:null,max:null},{name:"additionalFeedback",label:"Any additional feedback or comments on the reward and recognition programs?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null}]}]</survey_structure><survey_answers>[{programAwareness:"Very Aware",programSatisfaction:8,fairness:"Fair",motivationImpact:4,recognitionFrequency:"Often",preferredRecognitionType:"Public Acknowledgment",programEffectiveness:4,improvementSuggestions:"Increase the variety of rewards offered.",peerRecognition:true,managerRecognition:"Often",programClarity:true,recognitionImpact:"Being recognized publicly boosted my confidence and motivated me to take on more responsibilities.",programAccessibility:"Very Accessible",additionalFeedback:"Overall, the programs are effective but could benefit from more personalized rewards."},{programAwareness:"Somewhat Aware",programSatisfaction:6,fairness:"Neutral",motivationImpact:3,recognitionFrequency:"Sometimes",preferredRecognitionType:"Private Praise",programEffectiveness:3,improvementSuggestions:"Provide clearer criteria for recognition.",peerRecognition:false,managerRecognition:"Sometimes",programClarity:false,recognitionImpact:"",programAccessibility:"Accessible",additionalFeedback:"I would appreciate more frequent recognition from my manager."},{programAwareness:"Not Very Aware",programSatisfaction:4,fairness:"Unfair",motivationImpact:2,recognitionFrequency:"Rarely",preferredRecognitionType:"Monetary Rewards",programEffectiveness:2,improvementSuggestions:"Ensure that all departments have equal opportunities for recognition.",peerRecognition:true,managerRecognition:"Rarely",programClarity:false,recognitionImpact:"",programAccessibility:"Somewhat Accessible",additionalFeedback:"The current recognition process feels biased and inconsistent."},{programAwareness:"Very Aware",programSatisfaction:9,fairness:"Very Fair",motivationImpact:5,recognitionFrequency:"Very Often",preferredRecognitionType:"Career Advancement Opportunities",programEffectiveness:5,improvementSuggestions:"",peerRecognition:true,managerRecognition:"Very Often",programClarity:true,recognitionImpact:"Recognition from both peers and management has significantly enhanced my performance and job satisfaction.",programAccessibility:"Very Accessible",additionalFeedback:"Keep up the great work! The programs are highly motivating."},{programAwareness:"Not Aware at All",programSatisfaction:2,fairness:"Very Unfair",motivationImpact:1,recognitionFrequency:"Never",preferredRecognitionType:"Other",programEffectiveness:1,improvementSuggestions:"Implement a transparent and inclusive recognition system.",peerRecognition:false,managerRecognition:"Never",programClarity:false,recognitionImpact:"",programAccessibility:"Not Accessible",additionalFeedback:"There is a complete lack of recognition, which affects morale negatively."}]</survey_answers>'
+    },
+    {
+        "role": "assistant",
+        "content": "The capital of France is Paris. It's the country's largest city and serves as its political, economic, and cultural center."
+    },
+    {
+        "role":'<survey_structure>[{title:"Reward and Recognition Feedback Survey",fields:[{name:"programAwareness",label:"How aware are you of the current reward and recognition programs in place?",type:"multiple",required:true,options:["Very Aware","Somewhat Aware","Not Very Aware","Not Aware at All"],icon:null,multiline:null,min:null,max:null},{name:"programSatisfaction",label:"How satisfied are you with the current reward and recognition programs?",type:"slider",required:true,options:null,icon:null,multiline:null,min:1,max:10},{name:"fairness",label:"Do you feel the reward and recognition process is fair?",type:"multiple",required:true,options:["Very Fair","Fair","Neutral","Unfair","Very Unfair"],icon:null,multiline:null,min:null,max:null},{name:"motivationImpact",label:"How much do the reward and recognition programs motivate you to perform better?",type:"slider",required:true,options:null,icon:null,multiline:null,min:1,max:5},{name:"recognitionFrequency",label:"How often do you receive recognition for your work?",type:"multiple",required:true,options:["Very Often","Often","Sometimes","Rarely","Never"],icon:null,multiline:null,min:null,max:null},{name:"preferredRecognitionType",label:"What type of recognition do you value the most?",type:"multiple",required:true,options:["Public Acknowledgment","Private Praise","Monetary Rewards","Career Advancement Opportunities","Other"],icon:null,multiline:null,min:null,max:null},{name:"programEffectiveness",label:"How effective do you think the current programs are in recognizing employee achievements?",type:"icon",required:true,options:null,icon:"faStar",multiline:null,min:null,max:null},{name:"improvementSuggestions",label:"What improvements would you suggest for the reward and recognition programs?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null},{name:"peerRecognition",label:"Do you feel encouraged to recognize your peers?",type:"checkbox",required:true,options:null,icon:null,multiline:null,min:null,max:null},{name:"managerRecognition",label:"How often does your manager recognize your contributions?",type:"multiple",required:true,options:["Very Often","Often","Sometimes","Rarely","Never"],icon:null,multiline:null,min:null,max:null},{name:"programClarity",label:"Is the criteria for receiving rewards and recognition clear to you?",type:"checkbox",required:true,options:null,icon:null,multiline:null,min:null,max:null},{name:"recognitionImpact",label:"Can you provide an example of a time when recognition positively impacted your work?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null},{name:"programAccessibility",label:"How accessible do you find the reward and recognition programs?",type:"multiple",required:true,options:["Very Accessible","Accessible","Somewhat Accessible","Not Accessible"],icon:null,multiline:null,min:null,max:null},{name:"additionalFeedback",label:"Any additional feedback or comments on the reward and recognition programs?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null}]}]</survey_structure><survey_answers>[{programAwareness:"Very Aware",programSatisfaction:8,fairness:"Fair",motivationImpact:4,recognitionFrequency:"Often",preferredRecognitionType:"Public Acknowledgment",programEffectiveness:4,improvementSuggestions:"Increase the variety of rewards offered.",peerRecognition:true,managerRecognition:"Often",programClarity:true,recognitionImpact:"Being recognized publicly boosted my confidence and motivated me to take on more responsibilities.",programAccessibility:"Very Accessible",additionalFeedback:"Overall, the programs are effective but could benefit from more personalized rewards."},{programAwareness:"Somewhat Aware",programSatisfaction:6,fairness:"Neutral",motivationImpact:3,recognitionFrequency:"Sometimes",preferredRecognitionType:"Private Praise",programEffectiveness:3,improvementSuggestions:"Provide clearer criteria for recognition.",peerRecognition:false,managerRecognition:"Sometimes",programClarity:false,recognitionImpact:"",programAccessibility:"Accessible",additionalFeedback:"I would appreciate more frequent recognition from my manager."},{programAwareness:"Not Very Aware",programSatisfaction:4,fairness:"Unfair",motivationImpact:2,recognitionFrequency:"Rarely",preferredRecognitionType:"Monetary Rewards",programEffectiveness:2,improvementSuggestions:"Ensure that all departments have equal opportunities for recognition.",peerRecognition:true,managerRecognition:"Rarely",programClarity:false,recognitionImpact:"",programAccessibility:"Somewhat Accessible",additionalFeedback:"The current recognition process feels biased and inconsistent."},{programAwareness:"Very Aware",programSatisfaction:9,fairness:"Very Fair",motivationImpact:5,recognitionFrequency:"Very Often",preferredRecognitionType:"Career Advancement Opportunities",programEffectiveness:5,improvementSuggestions:"",peerRecognition:true,managerRecognition:"Very Often",programClarity:true,recognitionImpact:"Recognition from both peers and management has significantly enhanced my performance and job satisfaction.",programAccessibility:"Very Accessible",additionalFeedback:"Keep up the great work! The programs are highly motivating."},{programAwareness:"Not Aware at All",programSatisfaction:2,fairness:"Very Unfair",motivationImpact:1,recognitionFrequency:"Never",preferredRecognitionType:"Other",programEffectiveness:1,improvementSuggestions:"Implement a transparent and inclusive recognition system.",peerRecognition:false,managerRecognition:"Never",programClarity:false,recognitionImpact:"",programAccessibility:"Not Accessible",additionalFeedback:"There is a complete lack of recognition, which affects morale negatively."}]</survey_answers>',
+        "content": "What is the capital of Japan?"
+    },
+    {
+        "role": "assistant",
+        "content": "The capital of Japan is Tokyo. It's the country's largest metropolitan area and has been the seat of government since 1868."
+    },
+    {
+        "role": '<survey_structure>[{title:"Reward and Recognition Feedback Survey",fields:[{name:"programAwareness",label:"How aware are you of the current reward and recognition programs in place?",type:"multiple",required:true,options:["Very Aware","Somewhat Aware","Not Very Aware","Not Aware at All"],icon:null,multiline:null,min:null,max:null},{name:"programSatisfaction",label:"How satisfied are you with the current reward and recognition programs?",type:"slider",required:true,options:null,icon:null,multiline:null,min:1,max:10},{name:"fairness",label:"Do you feel the reward and recognition process is fair?",type:"multiple",required:true,options:["Very Fair","Fair","Neutral","Unfair","Very Unfair"],icon:null,multiline:null,min:null,max:null},{name:"motivationImpact",label:"How much do the reward and recognition programs motivate you to perform better?",type:"slider",required:true,options:null,icon:null,multiline:null,min:1,max:5},{name:"recognitionFrequency",label:"How often do you receive recognition for your work?",type:"multiple",required:true,options:["Very Often","Often","Sometimes","Rarely","Never"],icon:null,multiline:null,min:null,max:null},{name:"preferredRecognitionType",label:"What type of recognition do you value the most?",type:"multiple",required:true,options:["Public Acknowledgment","Private Praise","Monetary Rewards","Career Advancement Opportunities","Other"],icon:null,multiline:null,min:null,max:null},{name:"programEffectiveness",label:"How effective do you think the current programs are in recognizing employee achievements?",type:"icon",required:true,options:null,icon:"faStar",multiline:null,min:null,max:null},{name:"improvementSuggestions",label:"What improvements would you suggest for the reward and recognition programs?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null},{name:"peerRecognition",label:"Do you feel encouraged to recognize your peers?",type:"checkbox",required:true,options:null,icon:null,multiline:null,min:null,max:null},{name:"managerRecognition",label:"How often does your manager recognize your contributions?",type:"multiple",required:true,options:["Very Often","Often","Sometimes","Rarely","Never"],icon:null,multiline:null,min:null,max:null},{name:"programClarity",label:"Is the criteria for receiving rewards and recognition clear to you?",type:"checkbox",required:true,options:null,icon:null,multiline:null,min:null,max:null},{name:"recognitionImpact",label:"Can you provide an example of a time when recognition positively impacted your work?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null},{name:"programAccessibility",label:"How accessible do you find the reward and recognition programs?",type:"multiple",required:true,options:["Very Accessible","Accessible","Somewhat Accessible","Not Accessible"],icon:null,multiline:null,min:null,max:null},{name:"additionalFeedback",label:"Any additional feedback or comments on the reward and recognition programs?",type:"text",required:false,options:null,icon:null,multiline:true,min:null,max:null}]}]</survey_structure><survey_answers>[{programAwareness:"Very Aware",programSatisfaction:8,fairness:"Fair",motivationImpact:4,recognitionFrequency:"Often",preferredRecognitionType:"Public Acknowledgment",programEffectiveness:4,improvementSuggestions:"Increase the variety of rewards offered.",peerRecognition:true,managerRecognition:"Often",programClarity:true,recognitionImpact:"Being recognized publicly boosted my confidence and motivated me to take on more responsibilities.",programAccessibility:"Very Accessible",additionalFeedback:"Overall, the programs are effective but could benefit from more personalized rewards."},{programAwareness:"Somewhat Aware",programSatisfaction:6,fairness:"Neutral",motivationImpact:3,recognitionFrequency:"Sometimes",preferredRecognitionType:"Private Praise",programEffectiveness:3,improvementSuggestions:"Provide clearer criteria for recognition.",peerRecognition:false,managerRecognition:"Sometimes",programClarity:false,recognitionImpact:"",programAccessibility:"Accessible",additionalFeedback:"I would appreciate more frequent recognition from my manager."},{programAwareness:"Not Very Aware",programSatisfaction:4,fairness:"Unfair",motivationImpact:2,recognitionFrequency:"Rarely",preferredRecognitionType:"Monetary Rewards",programEffectiveness:2,improvementSuggestions:"Ensure that all departments have equal opportunities for recognition.",peerRecognition:true,managerRecognition:"Rarely",programClarity:false,recognitionImpact:"",programAccessibility:"Somewhat Accessible",additionalFeedback:"The current recognition process feels biased and inconsistent."},{programAwareness:"Very Aware",programSatisfaction:9,fairness:"Very Fair",motivationImpact:5,recognitionFrequency:"Very Often",preferredRecognitionType:"Career Advancement Opportunities",programEffectiveness:5,improvementSuggestions:"",peerRecognition:true,managerRecognition:"Very Often",programClarity:true,recognitionImpact:"Recognition from both peers and management has significantly enhanced my performance and job satisfaction.",programAccessibility:"Very Accessible",additionalFeedback:"Keep up the great work! The programs are highly motivating."},{programAwareness:"Not Aware at All",programSatisfaction:2,fairness:"Very Unfair",motivationImpact:1,recognitionFrequency:"Never",preferredRecognitionType:"Other",programEffectiveness:1,improvementSuggestions:"Implement a transparent and inclusive recognition system.",peerRecognition:false,managerRecognition:"Never",programClarity:false,recognitionImpact:"",programAccessibility:"Not Accessible",additionalFeedback:"There is a complete lack of recognition, which affects morale negatively."}]</survey_answers>',
+        "content": "What is the capital of Japan?"
+    },
+    {
+        "role": "assistant",
+        "content": "The capital of Japan is Tokyo. It's the country's largest metropolitan area and has been the seat of government since 1868."
+    }
+]
+
+
+def format_request(
+        user_message: str,
+        system_message: str,
+        few_shot_examples: Optional[List[Dict[str, str]]] = None,
+        max_tokens: int = 4096,
+        temperature: float = 0.1
+) -> Dict:
+    """
+    Format the request for the Anthropic API with optional few-shot examples.
+
+    Args:
+        user_message: The user's input message
+        system_message: The system message to guide Claude's behavior
+        few_shot_examples: Optional list of example conversations
+        max_tokens: Maximum tokens in response
+        temperature: Response randomness (0-1)
+
+    Returns:
+        Dict containing the formatted request
+    """
+    messages = []
+
+    # Add few-shot examples if provided
+    if few_shot_examples:
+        messages.extend(few_shot_examples)
+
+    # Add the current user message
+    messages.append({
+        "role": "user",
+        "content": user_message
+    })
+
+    return {
+        "model": "claude-3-5-sonnet-latest",
+        "messages": messages,
+        "system": system_message,
+        "max_tokens": max_tokens,
+        "stream": True,
+        "temperature": temperature,
+    }
 
 async def stream_anthropic_response(survey_type: str, custom_prompt: Optional[str] = None) -> AsyncGenerator[str, None]:
     # Construct the appropriate message based on survey type
@@ -370,6 +441,11 @@ async def stream_anthropic_response(survey_type: str, custom_prompt: Optional[st
     }
 
 
+    formatted_request = format_request(
+        user_message=user_message,
+        system_message=system_message,
+        few_shot_examples=few_shot_examples
+    )
 
     logger.debug(f"Sending request to Anthropic: {json.dumps(formatted_request, indent=2)}")
 
@@ -409,7 +485,6 @@ async def stream_anthropic_response(survey_type: str, custom_prompt: Optional[st
                 "error": {"message": str(e)}
             }
             yield f"data: {json.dumps(error_event)}\n\n"
-
 
 @stream_router.post("/anthropic")
 async def proxy_anthropic(request: SurveyRequest) -> StreamingResponse:
