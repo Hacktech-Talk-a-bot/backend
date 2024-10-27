@@ -61,7 +61,7 @@ def get_db():
 
 # Function to recreate the database
 def create_database():
-    Base.metadata.drop_all(bind=engine)
+    # Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 
