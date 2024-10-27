@@ -5,15 +5,17 @@ import logging
 import os
 import tempfile
 import traceback
-from typing import List
+from typing import AsyncGenerator
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Body
-from fastapi import FastAPI, File
+import httpx
+from fastapi import APIRouter, HTTPException
+from fastapi import FastAPI
+from fastapi import File
 from fastapi import Form
 from fastapi import UploadFile
+from fastapi.responses import StreamingResponse
 from openai import OpenAI
-from pydantic import BaseModel, Field
 
 from app.llm.models import SurveyResponse, KeywordsInput, SurveyField, SurveySection
 from app.llm.survey_agent import get_survey, generate_keywords, TextInput, rewrite_section
@@ -82,7 +84,7 @@ async def generate_survey(input_data: KeywordsInput):
 
 @survey_router.post("/analyze-image")
 async def analyze_media(
-        input_data: str = Form(...),
+        input_data: Optional[str] = Form(None),
         file: UploadFile = File(...)
 ):
     """Analyze media with associated text using GPT-4 vision capabilities."""
@@ -185,14 +187,14 @@ async def analyze_text(input_data: TextInput):
 @survey_router.post("/analyze-voice")
 async def analyze_voice_survey(audio_file: UploadFile = File(...)):
     """Transcribe audio and analyze content using GPT-4o."""
-    allowed_extensions = ['.flac', '.m4a', '.mp3', '.mp4', '.mpeg', '.mpga', '.oga', '.ogg', '.wav', '.webm']
+    # allowed_extensions = ['.flac', '.m4a', '.mp3', '.mp4', '.mpeg', '.mpga', '.oga', '.ogg', '.wav', '.webm']
     file_ext = os.path.splitext(audio_file.filename)[1].lower()
-
-    if file_ext not in allowed_extensions:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported file format. Supported formats: {allowed_extensions}"
-        )
+    #
+    # if file_ext not in allowed_extensions:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail=f"Unsupported file format. Supported formats: {allowed_extensions}"
+    #     )
 
     try:
         content = await audio_file.read()
@@ -248,64 +250,91 @@ async def regenerate_section(survey: SurveyResponse, survey_section: SurveyField
             detail=f"Unexpected error: {str(e)}"
         )
 
-# @survey_router.post("/generate-keywords")
-# async def generate_keywords_endpoint(input_data: TextInput):
-#     try:
-#         keywords = await generate_keywords(input_data.text)
-#         return {"keywords": keywords}
-#     except Exception as e:
-#         traceback.print_exc()
-#         logger.error(f"Unexpected error: {str(e)}")
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"An unexpected error occurred: {str(e)}"
-#         )
 
-# @survey_router.post("/generate_simple_fields")
-# async def generate_fields(input_data: TextInput):
-#     try:
-#         keywords = await generate_keywords(input_data.text)
-#
-#         async with httpx.AsyncClient() as http_client:
-#             # Generate survey structure
-#             survey_prompt = {
-#                 "model": "gpt-4o",
-#                 "messages": [
-#                     {"role": "system", "content": """Based on the provided keywords, create a survey structure as a JSON object exactly matching this format:
-#                     {
-#                         "personalInfo": {
-#                             "firstName": "text",
-#                             "lastName": "text",
-#                             "age": "number"
-#                         },
-#                         "employmentStatus": "select",
-#                         "employerDetails": {
-#                             "companyName": "text",
-#                             "position": "text",
-#                             "yearsEmployed": "number"
-#                         },
-#                         "educationLevel": "select",
-#                         "degrees": "multiple"
-#                     }
-#                     Make the survey relevant to these keywords."""},
-#                     {"role": "user",
-#                      "content": f"Create a survey structure based on these keywords: {', '.join(keywords)}"}
-#                 ],
-#                 "response_format": {"type": "json_object"}
-#             }
-#             survey_response = await http_client.post(OPENAI_URL, json=survey_prompt,
-#                                                      headers={"Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"})
-#             survey_structure = survey_response.json()['choices'][0]['message']['content']
-#
-#         return {
-#             "originalText": input_data.text,
-#             "extractedKeywords": keywords,
-#             "surveyStructure": json.loads(survey_structure)
-#         }
-#     except Exception as e:
-#         traceback.print_exc()
-#         logger.error(f"Unexpected error: {str(e)}")
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"An unexpected error occurred: {str(e)}"
-#         )
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+async def generate_html_stream() -> AsyncGenerator[str, None]:
+    """
+    Generate streaming HTML content from GPT-4
+    """
+    try:
+        async with httpx.AsyncClient() as client:
+            prompt = {
+                "model": "gpt-4o",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": """
+                        You are an HTML generator that creates visually appealing, semantic HTML content. 
+                        Follow these rules:
+                        1. Generate valid HTML5 content
+                        2. Use Bootstrap classes for styling
+                        3. Include some interactive elements
+                        4. Generate content gradually, section by section
+                        5. Each section should be meaningful and complete
+                        6. Do not include any ```html```, ```head```, or ```body``` tags - only the content.
+                        7. Avoid using any COMMENTS. 
+                        8. Generate only the content that would be rendered in the browser.
+                        Do not include <html>, <head>, or <body> tags - only the content.
+                        """
+                    },
+                    {
+                        "role": "user",
+                        "content": "Generate a visually appealing page about space exploration with sections for history, current missions, and future plans."
+                    }
+                ],
+                "stream": True
+            }
+
+            async with client.stream(
+                    "POST",
+                    OPENAI_URL,
+                    json=prompt,
+                    headers={
+                        "Authorization": f"Bearer {OPENAI_API_KEY}",
+                        "Content-Type": "application/json",
+                    }
+            ) as response:
+                if response.status_code != 200:
+                    raise HTTPException(
+                        status_code=response.status_code,
+                        detail="Error from OpenAI API"
+                    )
+
+                # Process the streaming response
+                async for line in response.aiter_lines():
+                    if line.startswith("data: "):
+                        if line.strip() == "data: [DONE]":
+                            break
+
+                        try:
+                            json_data = json.loads(line[6:])  # Remove "data: " prefix
+                            content = json_data.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                            if content:
+                                # Yield the content chunk
+                                yield content
+                        except json.JSONDecodeError:
+                            continue
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
+
+
+@survey_router.get("/generate_graphs")
+async def generate_graphs():
+    """
+    Endpoint that returns a streaming response of HTML content
+    """
+    return StreamingResponse(
+        generate_html_stream(),
+        media_type="text/html",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        }
+    )
