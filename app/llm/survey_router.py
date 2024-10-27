@@ -35,7 +35,7 @@ async def generate_survey(input_data: KeywordsInput):
     Endpoint to generate a survey JSON structure based on keywords provided.
 
     Args:
-        input_data (KeywordsInput): Input data containing comma-separated keywords for survey generation.
+        input_data (KeywordsInput): Input data containing a list of keywords for survey generation.
 
     Returns:
         dict: A dictionary containing the generated survey JSON.
@@ -43,14 +43,16 @@ async def generate_survey(input_data: KeywordsInput):
     try:
         # Validate keywords input
         keywords = input_data.keywords
-        if not keywords.strip():
+        if not keywords:
             raise HTTPException(
                 status_code=400,
-                detail="Keywords input cannot be empty."
+                detail="Keywords list cannot be empty."
             )
 
-        # Use the get_survey function with the provided keywords
-        survey_json = get_survey(keywords)
+        # Join the keywords list into a comma-separated string
+        keywords_string = ", ".join(keywords)
+
+        survey_json = get_survey(keywords_string)
         if not survey_json:
             raise HTTPException(
                 status_code=500,

@@ -36,8 +36,8 @@ class SurveyResponse(BaseModel):
     survey: List[SurveySection]
 
 class KeywordsInput(BaseModel):
-    keywords: str = Field(
+    keywords: List[str] = Field(
         ...,
-        description="Comma-separated keywords for survey generation",
-        example='"office party", "celebration", "design"'
+        description="List of keywords for survey generation",
+        example=["office party", "celebration", "design"]
     )
