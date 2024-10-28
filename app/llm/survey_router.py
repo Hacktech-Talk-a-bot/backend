@@ -325,18 +325,3 @@ async def generate_html_stream() -> AsyncGenerator[str, None]:
             status_code=500,
             detail=f"An unexpected error occurred: {str(e)}"
         )
-
-
-@survey_router.get("/generate_graphs")
-async def generate_graphs():
-    """
-    Endpoint that returns a streaming response of HTML content
-    """
-    return StreamingResponse(
-        generate_html_stream(),
-        media_type="text/html",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-        }
-    )
