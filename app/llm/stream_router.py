@@ -488,8 +488,8 @@ async def stream_anthropic_response(survey_type: str, custom_prompt: Optional[st
             yield f"data: {json.dumps(error_event)}\n\n"
 
 
-@stream_router.post("/anthropic")
-async def proxy_anthropic(request: SurveyRequest) -> StreamingResponse:
+@stream_router.post("/get_analytics")
+async def get_analytics(request: SurveyRequest) -> StreamingResponse:
     try:
         logger.debug(f"Received request: {request}")
 
